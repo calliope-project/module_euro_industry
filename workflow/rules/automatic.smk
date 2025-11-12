@@ -74,6 +74,7 @@ rule download_GEM_SPT:
     shell:
         'curl -sSLo {output.file} "{params.url}"'
 
+
 rule download_CHE_industry:
     message:
         "Download CHE industrial production per subsector."
@@ -88,3 +89,19 @@ rule download_CHE_industry:
     shell:
         'curl -sSLo {output.file} "{params.url}"'
 
+
+rule unzip:
+    message:
+        "Unzipping {wildcards.file}."
+    input:
+        zip_file="resources/automatic/{file}.zip"
+    output:
+        file_dir=directory("resources/automatic/{file}/")
+    wildcard_constraints:
+        file="|".join({"eurostat", "jrc_idees"}),
+    log:
+        "logs/automatic/unzip_{file}.log"
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/unzip.py"

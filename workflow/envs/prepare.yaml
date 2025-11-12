@@ -1,0 +1,9 @@
+name: prepare
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - numpy = 2.3.4
+  - pandas = 2.3.3
+  - country_converter = 1.3.2
+  - tqdm = 4.67.1
