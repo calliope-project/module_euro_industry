@@ -12,7 +12,7 @@ rule prepare_ammonia_production:
         "../scripts/prepare_ammonia_production.py"
 
 
-rule prepare_aggregated_production:
+rule prepare_current_aggregated_production:
     params:
         industry=config["industry"],
         countries=config["countries"],
@@ -22,10 +22,24 @@ rule prepare_aggregated_production:
         jrc_dir="resources/automatic/jrc_idees/",
         eurostat_dir="resources/automatic/eurostat/",
     output:
-        production_per_country="results/aggregated/production_per_country.csv",
+        production_per_country="results/aggregated/current_production.csv",
     log:
-        "logs/prepare/aggregated_production.log",
+        "logs/prepare/current_aggregated_production.log",
     conda:
         "../envs/prepare.yaml"
     script:
-        "../scripts/prepare_aggregated_production.py"
+        "../scripts/prepare_current_aggregated_production.py"
+
+rule prepare_future_aggregated_production:
+    params:
+        industry=config["industry"],
+    input:
+        current=rules.prepare_current_aggregated_production.output.production_per_country,
+    output:
+        future="results/aggregated/future_production_{year}.csv",
+    log:
+        "logs/prepare/future_aggregated_production_{year}.log",
+    conda:
+        "../envs/prepare.yaml",
+    script:
+        "../scripts/prepare_future_aggregated_production.py"

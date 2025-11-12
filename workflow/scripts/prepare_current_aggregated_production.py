@@ -44,8 +44,6 @@ The following subcategories [kton/a] are considered:
 - Chlorine
 - Methanol
 """
-
-import multiprocessing as mp
 import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
