@@ -1,0 +1,1 @@
+# module_euro_industry
