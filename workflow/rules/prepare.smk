@@ -44,3 +44,20 @@ rule prepare_future_aggregated_production:
         "../envs/prepare.yaml",
     script:
         "../scripts/prepare_future_aggregated_production.py"
+
+
+rule prepare_sector_ratios:
+    params:
+        industry=config["industry"],
+        ammonia=config["ammonia"],
+    input:
+        ammonia_production=rules.prepare_ammonia_production.output.prepared,
+        idees="resources/automatic/jrc_idees",
+    output:
+        industry_sector_ratios="resources/automatic/prepared/sector_ratios.csv",
+    log:
+        "logs/prepare/prepare_sector_ratios.log",
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/prepare_sector_ratios.py"

@@ -1,6 +1,8 @@
 # A minimal example of how to configure this module
 dummy_text: This is a user input.
 
+ammonia: True
+
 countries:
 - AL
 - AT
