@@ -1,7 +1,7 @@
 
 rule prepare_ammonia_production:
     input:
-        usgs=rules.download_usgs_ammonia.output.file,
+        usgs=rules.download_ammonia_usgs.output.file,
     output:
         prepared="resources/automatic/prepared/ammonia_production.csv",
     log:
@@ -29,6 +29,7 @@ rule prepare_current_aggregated_production:
         "../envs/prepare.yaml"
     script:
         "../scripts/prepare_current_aggregated_production.py"
+
 
 rule prepare_future_aggregated_production:
     params:

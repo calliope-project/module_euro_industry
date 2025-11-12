@@ -45,15 +45,30 @@ rule download_hotmaps:
         'curl -sSLo {output.file} "{params.url}"'
 
 
-rule download_usgs_ammonia:
+rule download_ammonia_usgs:
     message:
         "Download the U.S. geological survey on ammonia supply."
     params:
-        url=internal["resources"]["automatic"]["usgs_ammonia"],
+        url=internal["resources"]["automatic"]["ammonia"]["usgs"],
     output:
-        file="resources/automatic/usgs_ammonia.xlsx",
+        file="resources/automatic/ammonia/usgs.xlsx",
     log:
-        "logs/automatic/download_usgs_ammonia.log",
+        "logs/automatic/download_ammonia_usgs.log",
+    conda:
+        "../envs/shell.yaml"
+    shell:
+        'curl -sSLo {output.file} "{params.url}"'
+
+
+rule download_ammonia_plants:
+    message:
+        "Download ammonia plants as collected by PyPSA-Eur."
+    params:
+        url=internal["resources"]["automatic"]["ammonia"]["plants"]
+    output:
+        file="resources/automatic/ammonia/plants.csv",
+    log:
+        "logs/automatic/download_ammonia_plants.log",
     conda:
         "../envs/shell.yaml"
     shell:
@@ -69,6 +84,36 @@ rule download_GEM_SPT:
         file="resources/automatic/GEM_SPT.xlsx",
     log:
         "logs/automatic/download_GEM_SPT.log",
+    conda:
+        "../envs/shell.yaml"
+    shell:
+        'curl -sSLo {output.file} "{params.url}"'
+
+
+rule download_cement_non_eu:
+    message:
+        "Download cement plants as collected by PyPSA-Eur."
+    params:
+        url=internal["resources"]["automatic"]["non_eu"]["cement"],
+    output:
+        file="resources/automatic/cement_non_eu.csv",
+    log:
+        "logs/automatic/download_cement_non_eu.log",
+    conda:
+        "../envs/shell.yaml"
+    shell:
+        'curl -sSLo {output.file} "{params.url}"'
+
+
+rule download_refineries_non_eu:
+    message:
+        "Download refineries as collected by PyPSA-Eur."
+    params:
+        url=internal["resources"]["automatic"]["non_eu"]["refineries"],
+    output:
+        file="resources/automatic/non_eu/refineries.csv",
+    log:
+        "logs/automatic/download_refineries_non_eu.log",
     conda:
         "../envs/shell.yaml"
     shell:
