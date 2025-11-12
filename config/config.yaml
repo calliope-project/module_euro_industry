@@ -1,2 +1,126 @@
 # A minimal example of how to configure this module
 dummy_text: This is a user input.
+
+countries:
+- AL
+- AT
+- BA
+- BE
+- BG
+- CH
+- CZ
+- DE
+- DK
+- EE
+- ES
+- FI
+- FR
+- GB
+- GR
+- HR
+- HU
+- IE
+- IT
+- LT
+- LU
+- LV
+- ME
+- MK
+- NL
+- 'NO'
+- PL
+- PT
+- RO
+- RS
+- SE
+- SI
+- SK
+- XK
+industry:
+  St_primary_fraction:
+    2020: 0.6
+    2025: 0.55
+    2030: 0.5
+    2035: 0.45
+    2040: 0.4
+    2045: 0.35
+    2050: 0.3
+  DRI_fraction:
+    2020: 0
+    2025: 0
+    2030: 0.05
+    2035: 0.2
+    2040: 0.4
+    2045: 0.7
+    2050: 1
+  H2_DRI: 1.7
+  elec_DRI: 0.322
+  Al_primary_fraction:
+    2020: 0.4
+    2025: 0.375
+    2030: 0.35
+    2035: 0.325
+    2040: 0.3
+    2045: 0.25
+    2050: 0.2
+  MWh_NH3_per_tNH3: 5.166
+  MWh_CH4_per_tNH3_SMR: 10.8
+  MWh_elec_per_tNH3_SMR: 0.7
+  MWh_H2_per_tNH3_electrolysis: 5.93
+  MWh_elec_per_tNH3_electrolysis: 0.2473
+  MWh_NH3_per_MWh_H2_cracker: 1.46 # https://github.com/euronion/trace/blob/44a5ff8401762edbef80eff9cfe5a47c8d3c8be4/data/efficiencies.csv
+  NH3_process_emissions: 24.5
+  petrochemical_process_emissions: 25.5
+  #HVC primary/recycling based on values used in Neumann et al https://doi.org/10.1016/j.joule.2023.06.016, linearly interpolated between 2020 and 2050
+  #2020 recycling rates based on Agora https://static.agora-energiewende.de/fileadmin/Projekte/2021/2021_02_EU_CEAP/A-EW_254_Mobilising-circular-economy_study_WEB.pdf
+  #fractions refer to the total primary HVC production in 2020
+  #assumes 6.7 Mtplastics produced from recycling in 2020
+  HVC_primary_fraction:
+    2020: 0.88
+    2025: 0.85
+    2030: 0.78
+    2035: 0.7
+    2040: 0.6
+    2045: 0.5
+    2050: 0.4
+  HVC_mechanical_recycling_fraction:
+    2020: 0.12
+    2025: 0.15
+    2030: 0.18
+    2035: 0.21
+    2040: 0.24
+    2045: 0.27
+    2050: 0.30
+  HVC_chemical_recycling_fraction:
+    2020: 0.0
+    2025: 0.0
+    2030: 0.04
+    2035: 0.08
+    2040: 0.12
+    2045: 0.16
+    2050: 0.20
+  HVC_environment_sequestration_fraction: 0.
+  waste_to_energy: false
+  waste_to_energy_cc: false
+  sector_ratios_fraction_future:
+    2020: 0.0
+    2025: 0.05
+    2030: 0.2
+    2035: 0.45
+    2040: 0.7
+    2045: 0.85
+    2050: 1.0
+  basic_chemicals_without_NH3_production_today: 69. #Mt/a, = 86 Mtethylene-equiv - 17 MtNH3
+  HVC_production_today: 52.
+  MWh_elec_per_tHVC_mechanical_recycling: 0.547
+  MWh_elec_per_tHVC_chemical_recycling: 6.9
+  chlorine_production_today: 9.58
+  MWh_elec_per_tCl: 3.6
+  MWh_H2_per_tCl: -0.9372
+  methanol_production_today: 1.5
+  MWh_elec_per_tMeOH: 0.167
+  MWh_CH4_per_tMeOH: 10.25
+  MWh_MeOH_per_tMeOH: 5.528
+  hotmaps_locate_missing: false
+  reference_year: 2019
+  oil_refining_emissions: 0.013

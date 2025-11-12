@@ -7,4 +7,4 @@ resources:
     hotmaps: "https://gitlab.com/hotmaps/industrial_sites/industrial_sites_Industrial_Database/-/raw/master/data/Industrial_Database.csv"
     usgs_ammonia: "https://d9-wret.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/files/myb1-2022-nitro-ert.xlsx"
     GEM_SPT: "https://tubcloud.tu-berlin.de/s/Aqebo3rrQZWKGsG/download/Global-Steel-Plant-Tracker-April-2024-Standard-Copy-V1.xlsx"
-    CHE_industry: "https://github.com/PyPSA/pypsa-eur/blob/master/data/ch_industrial_production_per_subsector.csv"
+    CHE_industry: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/ch_industrial_production_per_subsector.csv"
