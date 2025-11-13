@@ -45,13 +45,14 @@ PYPSA_EUR_COUNTRIES = [
 class ShapeSchema(DataFrameModel):
     class Config:
         coerce = True
-        strict = False
+        strict = "filter"
+        drop_invalid_rows = True
 
     shape_id: Series[str] = Field(unique=True)
     "Unique ID for this shape."
     country_id: Series[str] = Field(isin=PYPSA_EUR_COUNTRIES)
     "ISO alpha-3 code."
-    shape_class: Series[str] = Field(isin=["land", "maritime"])
+    shape_class: Series[str] = Field(isin=["land"])
     "Shape classifier"
     geometry: GeoSeries
     "Shape polygon."

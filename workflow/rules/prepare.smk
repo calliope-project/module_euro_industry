@@ -15,6 +15,18 @@ rule prepare_shapes:
         "../scripts/prepare_shapes.py"
 
 
+rule prepare_population_raster:
+    input:
+        raster=rules.unzip_GHSL.output[0],
+        like_vector="resources/user/{shape}/shapes.parquet",
+    output:
+        path="resources/automatic/shapes/{shape}/population.tif",
+    log:
+        "logs/prepare/prepare_population_raster_{shape}.log"
+    wrapper:
+        "v7.9.0/geo/rasterio/clip"
+
+
 rule prepare_ammonia_production:
     input:
         usgs=rules.download_ammonia_usgs.output.file,
