@@ -1,3 +1,19 @@
+"""Rules in this file focus on parsing and cleaning data."""
+
+rule prepare_shapes:
+    message:
+        "Preparing input {wildcards.shape} polygons for European Industry processing."
+    input:
+        shapes="resources/user/{shape}/shapes.parquet"
+    output:
+        filtered="resources/automatic/shapes/{shape}/shapes.parquet"
+    log:
+        "logs/prepare/prepare_shapes_{shape}.log"
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/prepare_shapes.py"
+
 
 rule prepare_ammonia_production:
     input:
