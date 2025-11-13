@@ -22,3 +22,46 @@ rule disaggregate_production_key:
         "../envs/prepare.yaml"
     script:
         "../scripts/disaggregate_production_key.py"
+
+
+rule disaggregate_current_industrial_energy_demand:
+    input:
+        industrial_distribution_key=rules.disaggregate_production_key.output.industrial_distribution_key,
+        industrial_energy_demand_per_country_today=rules.build_current_industrial_energy_demand_per_country.output.current_energy_demand,
+    output:
+        industrial_energy_demand_per_node_today="results/disaggregated/current_industrial_energy_demand.csv",
+    log:
+        "logs/disaggregated/disaggregate_current_industrial_energy_demand.log",
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/disaggregate_current_industrial_energy_demand.py"
+
+
+rule disaggregate_future_industrial_production:
+    input:
+        industrial_distribution_key=rules.disaggregate_production_key.output.industrial_distribution_key,
+        industrial_production_per_country_tomorrow="results/aggregated/future_production_{year}.csv",
+    output:
+        industrial_production_per_node="results/disaggregated/future_production_{year}.csv",
+    log:
+        "logs/disaggregate/disaggregate_future_industrial_production_{year}.log",
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/disaggregate_future_industrial_production.py"
+
+
+rule disaggregate_future_industrial_energy_demand:
+    input:
+        industry_sector_ratios=rules.prepare_sector_ratios.output.industry_sector_ratios,
+        industrial_production_per_node="results/disaggregated/future_production_{year}.csv",
+        industrial_energy_demand_per_node_today="results/disaggregated/current_industrial_energy_demand.csv",
+    output:
+        industrial_energy_demand_per_node="results/disaggregated/future_energy_demand_{year}.csv",
+    log:
+        "logs/disaggregate/disaggregate_future_industrial_energy_demand_{year}.log",
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/disaggregate_future_industrial_energy_demand.py"
