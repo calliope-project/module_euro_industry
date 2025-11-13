@@ -56,6 +56,8 @@ class ShapeSchema(DataFrameModel):
     "Shape classifier"
     geometry: GeoSeries
     "Shape polygon."
+    population: Series[float] = Field(ge=0)
+    "Population within shape."
 
     @check("geometry", element_wise=True)
     def geom_not_empty(cls, geom):

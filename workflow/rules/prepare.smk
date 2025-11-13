@@ -1,20 +1,5 @@
 """Rules in this file focus on parsing and cleaning data."""
 
-rule prepare_shapes:
-    message:
-        "Preparing input {wildcards.shape} polygons for European Industry processing."
-    input:
-        shapes="resources/user/{shape}/shapes.parquet"
-    output:
-        filtered="resources/automatic/shapes/{shape}/shapes.parquet"
-    log:
-        "logs/prepare/prepare_shapes_{shape}.log"
-    conda:
-        "../envs/prepare.yaml"
-    script:
-        "../scripts/prepare_shapes.py"
-
-
 rule prepare_population_raster:
     input:
         raster=rules.unzip_GHSL.output[0],
@@ -25,6 +10,22 @@ rule prepare_population_raster:
         "logs/prepare/prepare_population_raster_{shape}.log"
     wrapper:
         "v7.9.0/geo/rasterio/clip"
+
+
+rule prepare_shapes:
+    message:
+        "Preparing input {wildcards.shape} polygons for European Industry processing."
+    input:
+        shapes="resources/user/{shape}/shapes.parquet",
+        population=rules.prepare_population_raster.output.path
+    output:
+        filtered="resources/automatic/shapes/{shape}/shapes.parquet"
+    log:
+        "logs/prepare/prepare_shapes_{shape}.log"
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/prepare_shapes.py"
 
 
 rule prepare_ammonia_production:
