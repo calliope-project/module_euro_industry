@@ -63,6 +63,25 @@ rule prepare_future_aggregated_production:
         "../scripts/prepare_future_aggregated_production.py"
 
 
+rule prepare_current_energy_demand_per_country:
+    params:
+        countries=config["countries"],
+        industry=config["industry"],
+        ammonia=config["ammonia"],
+    input:
+        transformation_output_coke=rules.prepare_coke_transformation.output.coke,
+        jrc="resources/automatic/jrc_idees",
+        industrial_production_per_country=rules.prepare_current_aggregated_production.output.production_per_country,
+    output:
+        current_energy_demand="results/aggregated/current_industrial_energy_demand_per_country.csv"
+    log:
+        "logs/prepare/prepare_current_industrial_energy_demand_per_country.log"
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/prepare_current_energy_demand_per_country.py"
+
+
 rule prepare_sector_ratios:
     params:
         industry=config["industry"],
@@ -78,3 +97,20 @@ rule prepare_sector_ratios:
         "../envs/prepare.yaml"
     script:
         "../scripts/prepare_sector_ratios.py"
+
+
+rule prepare_sector_ratios_intermediate:
+    params:
+        industry=config["industry"],
+    input:
+        industry_sector_ratios=rules.prepare_sector_ratios.output.industry_sector_ratios,
+        industrial_energy_demand_per_country_today=rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
+        industrial_production_per_country=rules.prepare_future_aggregated_production.output.future,
+    output:
+        industry_sector_ratios="resources/automatic/prepare/sector_ratios_intermediate_{year}.csv",
+    log:
+         "logs/prepare/prepare_sector_ratios_intermediate_{year}.log"
+    conda:
+        "../envs/prepare.yaml"
+    script:
+        "../scripts/prepare_sector_ratios_intermediate.py"
