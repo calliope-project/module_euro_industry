@@ -44,8 +44,6 @@ rule prepare_ammonia_production:
 rule prepare_coke_transformation:
     message:
         "Preparing coke transformation data."
-    params:
-        countries=config["countries"],
     input:
         eurostat_dir="resources/automatic/eurostat",
     output:
@@ -58,17 +56,16 @@ rule prepare_coke_transformation:
         "../scripts/prepare_coke_transformation.py"
 
 
-rule prepare_current_aggregated_production:
+rule prepare_current_aggregated_production:  # TODO: change to national production
     params:
         industry=config["industry"],
-        countries=config["countries"],
     input:
         ch_industrial_production=rules.download_CHE_industry.output.file,
         ammonia_production=rules.prepare_ammonia_production.output.prepared,
         jrc_dir="resources/automatic/jrc_idees/",
         eurostat_dir="resources/automatic/eurostat/",
     output:
-        production_per_country="results/aggregated/current_production.csv",
+        production_per_country="resources/automatic/prepare/current_national_production.csv",
     log:
         "logs/prepare/current_aggregated_production.log",
     conda:

@@ -36,7 +36,7 @@ def main(input_path: str, output_path: str)-> None:
         na_values=["--"],
     )
 
-    ammonia.index = cc.convert(ammonia.index, to="iso2")
+    ammonia.index = cc.convert(ammonia.index, to="ISO3")
 
     years = [str(i) for i in range(2018, 2023)]
 

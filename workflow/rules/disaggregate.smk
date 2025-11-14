@@ -5,7 +5,6 @@ rule disaggregate_production_key:
         "Disaggregate industrial production using proxies (population, facilities, emissions)."
     params:
         hotmaps_locate_missing=config["industry"]["hotmaps_locate_missing"],
-        countries=config["countries"],
         geographic_crs=internal["crs"]["geographic"]
     input:
         regions_onshore=rules.prepare_shapes.output.filtered,
