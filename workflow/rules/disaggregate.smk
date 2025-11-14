@@ -26,7 +26,7 @@ rule disaggregate_production_key:
 rule disaggregate_current_industrial_energy_demand:
     input:
         industrial_distribution_key=rules.disaggregate_production_key.output.industrial_distribution_key,
-        industrial_energy_demand_per_country_today=rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
+        industrial_energy_demand_per_country_today=rules.prepare_current_national_energy_demand.output.current_energy_demand,
     output:
         industrial_energy_demand_per_node_today="results/disaggregated/current_industrial_energy_demand.csv",
     log:

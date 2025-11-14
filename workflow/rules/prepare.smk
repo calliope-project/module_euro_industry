@@ -89,7 +89,7 @@ rule prepare_future_national_production:
         "../scripts/prepare_future_national_production.py"
 
 
-rule prepare_current_energy_demand_per_country:
+rule prepare_current_national_energy_demand:
     params:
         countries=config["countries"],
         industry=config["industry"],
@@ -99,13 +99,13 @@ rule prepare_current_energy_demand_per_country:
         jrc="resources/automatic/jrc_idees",
         industrial_production_per_country=rules.prepare_current_national_production.output.production_per_country,
     output:
-        current_energy_demand="results/aggregated/current_industrial_energy_demand_per_country.csv"
+        current_energy_demand="resources/automatic/national/current_national_energy_demand.csv"
     log:
-        "logs/prepare/prepare_current_industrial_energy_demand_per_country.log"
+        "logs/prepare/prepare_current_national_energy_demand.log"
     conda:
         "../envs/prepare.yaml"
     script:
-        "../scripts/prepare_current_energy_demand_per_country.py"
+        "../scripts/prepare_current_national_energy_demand.py"
 
 
 rule prepare_sector_ratios:
@@ -130,7 +130,7 @@ rule prepare_sector_ratios_intermediate:
         industry=config["industry"],
     input:
         industry_sector_ratios=rules.prepare_sector_ratios.output.industry_sector_ratios,
-        industrial_energy_demand_per_country_today=rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
+        industrial_energy_demand_per_country_today=rules.prepare_current_national_energy_demand.output.current_energy_demand,
         industrial_production_per_country=rules.prepare_future_national_production.output.future,
     output:
         industry_sector_ratios="resources/automatic/prepare/sector_ratios_intermediate_{year}.csv",
