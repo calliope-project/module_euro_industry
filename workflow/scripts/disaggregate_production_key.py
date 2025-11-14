@@ -44,9 +44,7 @@ if TYPE_CHECKING:
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
 def locate_missing_industrial_sites(df):
-    """
-    Locate industrial sites without valid locations based on city and
-    countries.
+    """Locate industrial sites without valid locations based on city and countries.
 
     Should only be used if the model's spatial resolution is coarser
     than individual cities.
@@ -80,10 +78,8 @@ def locate_missing_industrial_sites(df):
     return df
 
 
-def prepare_hotmaps_database(regions):
-    """
-    Load hotmaps database of industrial sites and map onto bus regions.
-    """
+def prepare_hotmaps_database(regions: gpd.GeoDataFrame):
+    """Load hotmaps database of industrial sites and map onto bus regions."""
     df = pd.read_csv(snakemake.input.hotmaps, sep=";", index_col=0)
 
     df[["srid", "coordinates"]] = df.geom.str.split(";", expand=True)
@@ -97,31 +93,24 @@ def prepare_hotmaps_database(regions):
     df["coordinates"] = gpd.GeoSeries.from_wkt(df["coordinates"])
 
     gdf = gpd.GeoDataFrame(df, geometry="coordinates", crs="EPSG:4326")
-
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
-
-    gdf.rename(columns={"name": "bus"}, inplace=True)
-    gdf["country"] = gdf.bus.str[:2]
 
     # the .sjoin can lead to duplicates if a geom is in two overlapping regions
     if gdf.index.duplicated().any():
         # get all duplicated entries
         duplicated_i = gdf.index[gdf.index.duplicated()]
         # convert from raw data country name to iso-2-code
-        code = cc.convert(gdf.loc[duplicated_i, "Country"], to="iso2")  # noqa: F841
+        code = cc.convert(gdf.loc[duplicated_i, "Country"], to="iso3")  # noqa: F841
         # screen out malformed country allocation
-        gdf_filtered = gdf.loc[duplicated_i].query("country == @code")
+        gdf_filtered = gdf.loc[duplicated_i].query("country_id == @code")
         # concat not duplicated and filtered gdf
         gdf = pd.concat([gdf.drop(duplicated_i), gdf_filtered])
 
     return gdf
 
 
-def prepare_gem_database(regions):
-    """
-    Load GEM database of steel plants and map onto bus regions.
-    """
-
+def prepare_gem_database(regions: gpd.GeoDataFrame):
+    """Load GEM database of steel plants and map onto bus regions."""
     df = pd.read_excel(
         snakemake.input.gem_gspt,
         sheet_name="Steel Plants",
@@ -142,19 +131,13 @@ def prepare_gem_database(regions):
     )
     geometry = gpd.points_from_xy(latlon["lon"], latlon["lat"])
     gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
-
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
-
-    gdf.rename(columns={"name": "bus"}, inplace=True)
-    gdf["country"] = gdf.bus.str[:2]
 
     return gdf
 
 
-def prepare_ammonia_database(regions):
-    """
-    Load ammonia database of plants and map onto bus regions.
-    """
+def prepare_ammonia_database(regions: gpd.GeoDataFrame):
+    """Load ammonia database of plants and map onto bus regions."""
     df = pd.read_csv(snakemake.input.ammonia, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
@@ -162,68 +145,47 @@ def prepare_ammonia_database(regions):
 
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
-    gdf.rename(columns={"name": "bus"}, inplace=True)
-    gdf["country"] = gdf.bus.str[:2]
-
     return gdf
 
 
-def prepare_cement_supplement(regions):
-    """
-    Load supplementary cement plants from non-EU-(NO-CH) and map onto bus
-    regions.
-    """
-
+def prepare_cement_supplement(regions: gpd.GeoDataFrame):
+    """Load supplementary cement plants from non-EU-(NO-CH) and map onto bus regions."""
     df = pd.read_csv(snakemake.input.cement_supplement, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
     gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
-
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
-
-    gdf.rename(columns={"name": "bus"}, inplace=True)
-    gdf["country"] = gdf.bus.str[:2]
 
     return gdf
 
 
 def prepare_refineries_supplement(regions):
-    """
-    Load supplementary refineries from non-EU-(NO-CH) and map onto bus regions.
-    """
-
+    """Load supplementary refineries from non-EU-(NO-CH) and map onto bus regions."""
     df = pd.read_csv(snakemake.input.refineries_supplement, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
     gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
-
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
-
-    gdf.rename(columns={"name": "bus"}, inplace=True)
-    gdf["country"] = gdf.bus.str[:2]
 
     return gdf
 
 
 def build_nodal_distribution_key(
-    hotmaps, gem, ammonia, cement, refineries, regions, countries
+    hotmaps, gem, ammonia, cement, refineries, regions
 ):
-    """
-    Build nodal distribution keys for each sector.
-    """
+    """Build nodal distribution keys for each sector."""
     sectors = hotmaps.Subsector.unique()
+    countries = regions["country_id"].unique()
 
     keys = pd.DataFrame(index=regions.index, columns=sectors, dtype=float)
 
-    pop = pd.read_csv(snakemake.input.clustered_pop_layout, index_col=0)
-    pop["country"] = pop.index.str[:2]
-    ct_total = pop.total.groupby(pop["country"]).sum()
-    keys["population"] = pop.total / pop.country.map(ct_total)
+    ct_total = regions.groupby("country_id")["population"].sum()
+    keys["population"] = regions["population"] / regions["country_id"].map(ct_total)
 
     for sector, country in product(sectors, countries):
-        regions_ct = regions.index[regions.index.str.contains(country)]
+        regions_ct = regions[regions["country_id"] == country].index
 
-        facilities = hotmaps.query("country == @country and Subsector == @sector")
+        facilities = hotmaps.query("country_id == @country and Subsector == @sector")
 
         if not facilities.empty:
             emissions = facilities["Emissions_ETS_2014"].fillna(
@@ -235,23 +197,23 @@ def build_nodal_distribution_key(
                 # assume 20% quantile for missing values
                 emissions = emissions.fillna(emissions.quantile(0.2))
                 key = emissions / emissions.sum()
-            key = key.groupby(facilities.bus).sum().reindex(regions_ct, fill_value=0.0)
-        elif sector == "Cement" and country in cement.country.unique():
-            facilities = cement.query("country == @country")
+            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
+        elif sector == "Cement" and country in cement["country_id"].unique():
+            facilities = cement.query("country_id == @country")
             production = facilities["Cement [kt/a]"]
             if production.sum() == 0:
                 key = pd.Series(1 / len(facilities), facilities.index)
             else:
                 key = production / production.sum()
-            key = key.groupby(facilities.bus).sum().reindex(regions_ct, fill_value=0.0)
-        elif sector == "Refineries" and country in refineries.country.unique():
-            facilities = refineries.query("country == @country")
+            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
+        elif sector == "Refineries" and country in refineries["country_id"].unique():
+            facilities = refineries.query("country_id == @country")
             production = facilities["Capacity [bbl/day]"]
             if production.sum() == 0:
                 key = pd.Series(1 / len(facilities), facilities.index)
             else:
                 key = production / production.sum()
-            key = key.groupby(facilities.bus).sum().reindex(regions_ct, fill_value=0.0)
+            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
         else:
             key = keys.loc[regions_ct, "population"]
 
@@ -260,9 +222,9 @@ def build_nodal_distribution_key(
     # add specific steel subsectors
     steel_processes = ["EAF", "DRI + EAF", "Integrated steelworks"]
     for process, country in product(steel_processes, countries):
-        regions_ct = regions.index[regions.index.str.contains(country)]
+        regions_ct = regions[regions["country_id"] == country].index
 
-        facilities = gem.query("country == @country")
+        facilities = gem.query("country_id == @country")
 
         if process == "EAF":
             status_list = [
@@ -336,7 +298,7 @@ def build_nodal_distribution_key(
                 key = pd.Series(1 / len(capacities), capacities.index)
             else:
                 key = capacities / capacities.sum()
-            buses = facilities.loc[capacities.index, "bus"]
+            buses = facilities.loc[capacities.index, "shape_id"]
             key = key.groupby(buses).sum().reindex(regions_ct, fill_value=0.0)
         else:
             key = keys.loc[regions_ct, "population"]
@@ -345,9 +307,9 @@ def build_nodal_distribution_key(
 
     # add ammonia
     for country in countries:
-        regions_ct = regions.index[regions.index.str.contains(country)]
+        regions_ct = regions[regions["country_id"] == country].index
 
-        facilities = ammonia.query("country == @country")
+        facilities = ammonia.query("country_id == @country")
 
         if not facilities.empty:
             production = facilities["Ammonia [kt/a]"]
@@ -357,7 +319,7 @@ def build_nodal_distribution_key(
                 # assume 50% of the minimum production for missing values
                 production = production.fillna(0.5 * facilities["Ammonia [kt/a]"].min())
                 key = production / production.sum()
-            key = key.groupby(facilities.bus).sum().reindex(regions_ct, fill_value=0.0)
+            key = key.groupby(facilities["shape_id"]).sum().reindex(regions_ct, fill_value=0.0)
         else:
             key = 0.0
 
@@ -368,9 +330,9 @@ def build_nodal_distribution_key(
 
 if __name__ == "__main__":
 
-    countries = snakemake.params.countries
+    # countries = snakemake.params.countries
 
-    regions = gpd.read_file(snakemake.input.regions_onshore).set_index("name")
+    regions = gpd.read_parquet(snakemake.input.regions_onshore).set_index("shape_id")
 
     hotmaps = prepare_hotmaps_database(regions)
 
@@ -383,7 +345,7 @@ if __name__ == "__main__":
     refineries = prepare_refineries_supplement(regions)
 
     keys = build_nodal_distribution_key(
-        hotmaps, gem, ammonia, cement, refineries, regions, countries
+        hotmaps, gem, ammonia, cement, refineries, regions
     )
 
     keys.to_csv(snakemake.output.industrial_distribution_key)
