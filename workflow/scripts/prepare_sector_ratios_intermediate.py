@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 #
 # SPDX-License-Identifier: MIT
-"""
-Build specific energy consumption by carrier and industries and by country,
-that interpolates between the current average energy consumption (from
-2015-2020) and the ideal future best-in-class consumption.
+"""Build specific energy consumption by carrier and industries and by country.
+
+Iterpolates between the current average energy consumption (from 2015-2020) and the ideal future best-in-class consumption.
 
 Description
 -------

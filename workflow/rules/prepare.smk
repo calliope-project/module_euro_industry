@@ -91,7 +91,6 @@ rule prepare_future_national_production:
 
 rule prepare_current_national_energy_demand:
     params:
-        countries=config["countries"],
         industry=config["industry"],
         ammonia=config["ammonia"],
     input:
@@ -99,7 +98,7 @@ rule prepare_current_national_energy_demand:
         jrc="resources/automatic/jrc_idees",
         industrial_production_per_country=rules.prepare_current_national_production.output.production_per_country,
     output:
-        current_energy_demand="resources/automatic/national/current_national_energy_demand.csv"
+        current_energy_demand="resources/automatic/national/current_energy_demand.csv"
     log:
         "logs/prepare/prepare_current_national_energy_demand.log"
     conda:

@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 #
 # SPDX-License-Identifier: MIT
-"""
-Build industrial energy demand per model region.
+"""Build industrial energy demand per model region.
 
 Description
 -------
@@ -22,34 +21,34 @@ For each bus, the following carriers are considered:
 
 which can later be used as values for the industry load.
 """
-
-import logging
 import sys
 from typing import TYPE_CHECKING, Any
 
+import geopandas as gpd
 import pandas as pd
 
 if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
-logger = logging.getLogger(__name__)
-
 if __name__ == "__main__":
+    shapes_df = gpd.read_parquet(snakemake.input.shapes)
     # import ratios
-    fn = snakemake.input.industry_sector_ratios
-    sector_ratios = pd.read_csv(fn, header=[0, 1], index_col=0)
-
+    sector_ratios = pd.read_csv(
+        snakemake.input.sector_ratios, header=[0, 1], index_col=0
+    )
     # material demand per node and industry (Mton/a)
-    fn = snakemake.input.industrial_production_per_node
-    nodal_production = pd.read_csv(fn, index_col=0) / 1e3
-
+    nodal_production = (
+        pd.read_csv(snakemake.input.disaggregated_future_production, index_col=0) / 1e3
+    )
     # energy demand today to get current electricity
-    fn = snakemake.input.industrial_energy_demand_per_node_today
-    nodal_today = pd.read_csv(fn, index_col=0)
-
+    current_energy_demand = pd.read_csv(
+        snakemake.input.disaggregated_current_energy_demand, index_col=0
+    )
+    breakpoint()
     nodal_sector_ratios = pd.concat(
-        {node: sector_ratios[node[:2]] for node in nodal_production.index}, axis=1
+        {node: sector_ratios[node[:2]] for node in nodal_production.index},
+        axis="columns",
     )
 
     nodal_production_stacked = nodal_production.stack()
@@ -69,7 +68,7 @@ if __name__ == "__main__":
     }
     nodal_df.rename(columns=rename_sectors, inplace=True)
 
-    nodal_df["current electricity"] = nodal_today["electricity"]
+    nodal_df["current electricity"] = current_energy_demand["electricity"]
 
     nodal_df.index.name = "TWh/a (MtCO2/a)"
 
