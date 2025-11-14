@@ -1,86 +1,67 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>>
-#
-# SPDX-License-Identifier: MIT
-"""Build industrial energy demand per model region.
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
+"""Calculate current energy demand per region.
 
-Description
--------
-
-This rule maps the industrial energy demand per country `industrial_energy_demand_per_country_today.csv` to each bus region.
-The energy demand per country is multiplied by the mapping value from the file ``industrial_distribution_key_base_s_{clusters}.csv`` between 0 and 1 to get the industrial energy demand per bus.
-
+This rule maps the industrial energy demand per country to each region.
 The unit of the energy demand is TWh/a.
 """
 
-import logging
 import sys
 from itertools import product
 from typing import TYPE_CHECKING, Any
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
+from _schemas import SECTOR_MAPPING
 
 if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
 
-logger = logging.getLogger(__name__)
+def disaggregate_current_energy_demand(
+    shapes_path: str,
+    ratios_path: str,
+    national_energy_demand_path: str,
+    output_path: str,
+):
+    """Use ratios to disaggregate national energy demand for industry subsectors."""
+    shapes_gdf = gpd.read_parquet(shapes_path)
+    national_demand = pd.read_csv(
+        national_energy_demand_path, header=[0, 1], index_col=0
+    )
+    ratios_df = pd.read_csv(ratios_path, index_col=0)
 
-# map JRC/our sectors to hotmaps sector, where mapping exist
-sector_mapping = {
-    "Electric arc": "EAF",
-    "Integrated steelworks": "Integrated steelworks",
-    "DRI + Electric arc": "DRI + EAF",
-    "Ammonia": "Ammonia",
-    "Basic chemicals (without ammonia)": "Chemical industry",
-    "Other chemicals": "Chemical industry",
-    "Pharmaceutical products etc.": "Chemical industry",
-    "Cement": "Cement",
-    "Ceramics & other NMM": "Non-metallic mineral products",
-    "Glass production": "Glass",
-    "Pulp production": "Paper and printing",
-    "Paper production": "Paper and printing",
-    "Printing and media reproduction": "Paper and printing",
-    "Alumina production": "Non-ferrous metals",
-    "Aluminium - primary production": "Non-ferrous metals",
-    "Aluminium - secondary production": "Non-ferrous metals",
-    "Other non-ferrous metals": "Non-ferrous metals",
-}
-
-
-def build_nodal_industrial_energy_demand():
-    fn = snakemake.input.industrial_energy_demand_per_country_today
-    industrial_demand = pd.read_csv(fn, header=[0, 1], index_col=0)
-
-    fn = snakemake.input.industrial_distribution_key
-    keys = pd.read_csv(fn, index_col=0)
-    keys["country"] = keys.index.str[:2]
-
-    nodal_demand = pd.DataFrame(
-        0.0, dtype=float, index=keys.index, columns=industrial_demand.index
+    disaggregated_demand = pd.DataFrame(
+        0.0, dtype=float, index=ratios_df.index, columns=national_demand.index
     )
 
-    countries = keys.country.unique()
-    sectors = industrial_demand.columns.unique(1)
+    countries = shapes_gdf["country_id"].unique()
+    sectors = national_demand.columns.unique(1)
 
     for country, sector in product(countries, sectors):
-        buses = keys.index[keys.country == country]
-        mapping = sector_mapping.get(sector, "population")
+        country_shapes = shapes_gdf[shapes_gdf["country_id"] == country]["shape_id"]
+        mapping = SECTOR_MAPPING.get(sector, "population")
 
-        key = keys.loc[buses, mapping]
-        demand = industrial_demand[country, sector]
+        ratio = ratios_df.loc[country_shapes, mapping]
+        demand = national_demand[country, sector]
 
         outer = pd.DataFrame(
-            np.outer(key, demand), index=key.index, columns=demand.index
+            np.outer(ratio, demand), index=ratio.index, columns=demand.index
         )
+        disaggregated_demand.loc[country_shapes] += outer
 
-        nodal_demand.loc[buses] += outer
-
-    nodal_demand.index.name = "TWh/a"
-
-    nodal_demand.to_csv(snakemake.output.industrial_energy_demand_per_node_today)
+    disaggregated_demand.index.name = "TWh/a"
+    disaggregated_demand.to_csv(output_path)
 
 
 if __name__ == "__main__":
-    build_nodal_industrial_energy_demand()
+    disaggregate_current_energy_demand(
+        shapes_path=snakemake.input.shapes,
+        ratios_path=snakemake.input.shape_ratios,
+        national_energy_demand_path=snakemake.input.current_national_energy_demand,
+        output_path=snakemake.output.demand_per_shape,
+    )

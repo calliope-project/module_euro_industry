@@ -19,7 +19,7 @@ rule prepare_shapes:
         shapes="resources/user/{shape}/shapes.parquet",
         population=rules.prepare_population_raster.output.path
     output:
-        filtered="resources/automatic/shapes/{shape}/shapes.parquet"
+        shapes="resources/automatic/shapes/{shape}/shapes.parquet"
     log:
         "logs/prepare/prepare_shapes_{shape}.log"
     conda:
@@ -123,7 +123,7 @@ rule prepare_sector_ratios:
     script:
         "../scripts/prepare_sector_ratios.py"
 
-
+# TODO: rename to subsector ratios per country or something similar.
 rule prepare_sector_ratios_intermediate:
     params:
         industry=config["industry"],

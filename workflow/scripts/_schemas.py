@@ -41,6 +41,31 @@ PYPSA_EUR_COUNTRIES = [
     "XKX",
 ]
 
+# map JRC/our sectors to hotmaps sector, where mapping exist
+SECTOR_MAPPING = {
+    "Electric arc": "EAF",
+    "Integrated steelworks": "Integrated steelworks",
+    "DRI + Electric arc": "DRI + EAF",
+    "Ammonia": "Ammonia",
+    "HVC": "Chemical industry",
+    "HVC (mechanical recycling)": "Chemical industry",
+    "HVC (chemical recycling)": "Chemical industry",
+    "Methanol": "Chemical industry",
+    "Chlorine": "Chemical industry",
+    "Other chemicals": "Chemical industry",
+    "Pharmaceutical products etc.": "Chemical industry",
+    "Cement": "Cement",
+    "Ceramics & other NMM": "Non-metallic mineral products",
+    "Glass production": "Glass",
+    "Pulp production": "Paper and printing",
+    "Paper production": "Paper and printing",
+    "Printing and media reproduction": "Paper and printing",
+    "Alumina production": "Non-ferrous metals",
+    "Aluminium - primary production": "Non-ferrous metals",
+    "Aluminium - secondary production": "Non-ferrous metals",
+    "Other non-ferrous metals": "Non-ferrous metals",
+}
+
 
 class ShapeSchema(DataFrameModel):
     class Config:

@@ -345,7 +345,7 @@ def main():
     keys = build_nodal_distribution_key(
         hotmaps, gem, ammonia, cement, refineries, regions
     )
-    keys.to_csv(snakemake.output.industrial_distribution_key)
+    keys.to_csv(snakemake.output.shape_ratios)
 
 
 if __name__ == "__main__":

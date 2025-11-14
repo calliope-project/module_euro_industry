@@ -30,5 +30,5 @@ if __name__ == "__main__":
     main(
         shapes_path=snakemake.input.shapes,
         population_path=snakemake.input.population,
-        output_path=snakemake.output.filtered,
+        output_path=snakemake.output.shapes,
     )

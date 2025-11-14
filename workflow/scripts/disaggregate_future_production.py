@@ -1,9 +1,8 @@
-"""Build industrial production per model region.
-
-Adapted from PyPSA-Eur code (MIT licensed).
-- Contributors to PyPSA-Eur: https://github.com/pypsa/pypsa-eur
-- Commit: https://github.com/PyPSA/pypsa-eur/commit/822a92729e6973aa3aff741d6c94f1da2c75e8b2
-"""
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
+"""Build industrial production per region in the shape file."""
 
 import sys
 from itertools import product
@@ -11,39 +10,14 @@ from typing import TYPE_CHECKING, Any
 
 import geopandas as gpd
 import pandas as pd
+from _schemas import SECTOR_MAPPING
 
 if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w")
 
 
-# map JRC/our sectors to hotmaps sector, where mapping exist
-SECTOR_MAPPING = {
-    "Electric arc": "EAF",
-    "Integrated steelworks": "Integrated steelworks",
-    "DRI + Electric arc": "DRI + EAF",
-    "Ammonia": "Ammonia",
-    "HVC": "Chemical industry",
-    "HVC (mechanical recycling)": "Chemical industry",
-    "HVC (chemical recycling)": "Chemical industry",
-    "Methanol": "Chemical industry",
-    "Chlorine": "Chemical industry",
-    "Other chemicals": "Chemical industry",
-    "Pharmaceutical products etc.": "Chemical industry",
-    "Cement": "Cement",
-    "Ceramics & other NMM": "Non-metallic mineral products",
-    "Glass production": "Glass",
-    "Pulp production": "Paper and printing",
-    "Paper production": "Paper and printing",
-    "Printing and media reproduction": "Paper and printing",
-    "Alumina production": "Non-ferrous metals",
-    "Aluminium - primary production": "Non-ferrous metals",
-    "Aluminium - secondary production": "Non-ferrous metals",
-    "Other non-ferrous metals": "Non-ferrous metals",
-}
-
-
-def diaggregate_production(
+def disaggregate_production(
     shapes_path: str, national_production_path: str, ratios_path: str, output_path: str
 ):
     """Map industrial production per country to each shape using proxies.
@@ -84,7 +58,7 @@ def diaggregate_production(
 
 
 if __name__ == "__main__":
-    diaggregate_production(
+    disaggregate_production(
         shapes_path=snakemake.input.shapes,
         national_production_path=snakemake.input.future_national_production,
         ratios_path=snakemake.input.ratios,
