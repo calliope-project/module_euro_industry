@@ -56,7 +56,7 @@ rule prepare_coke_transformation:
         "../scripts/prepare_coke_transformation.py"
 
 
-rule prepare_current_aggregated_production:  # TODO: change to national production
+rule prepare_current_national_production:
     params:
         industry=config["industry"],
     input:
@@ -65,28 +65,28 @@ rule prepare_current_aggregated_production:  # TODO: change to national producti
         jrc_dir="resources/automatic/jrc_idees/",
         eurostat_dir="resources/automatic/eurostat/",
     output:
-        production_per_country="resources/automatic/prepare/current_national_production.csv",
+        production_per_country="resources/automatic/national/current_production.csv",
     log:
-        "logs/prepare/current_aggregated_production.log",
+        "logs/prepare/prepare_current_national_production.log",
     conda:
         "../envs/prepare.yaml"
     script:
-        "../scripts/prepare_current_aggregated_production.py"
+        "../scripts/prepare_current_national_production.py"
 
 
-rule prepare_future_aggregated_production:
+rule prepare_future_national_production:
     params:
         industry=config["industry"],
     input:
-        current=rules.prepare_current_aggregated_production.output.production_per_country,
+        current=rules.prepare_current_national_production.output.production_per_country,
     output:
-        future="results/aggregated/future_production_{year}.csv",
+        future="resources/automatic/national/future_production_{year}.csv",
     log:
         "logs/prepare/future_aggregated_production_{year}.log",
     conda:
         "../envs/prepare.yaml",
     script:
-        "../scripts/prepare_future_aggregated_production.py"
+        "../scripts/prepare_future_national_production.py"
 
 
 rule prepare_current_energy_demand_per_country:
@@ -97,7 +97,7 @@ rule prepare_current_energy_demand_per_country:
     input:
         transformation_output_coke=rules.prepare_coke_transformation.output.coke,
         jrc="resources/automatic/jrc_idees",
-        industrial_production_per_country=rules.prepare_current_aggregated_production.output.production_per_country,
+        industrial_production_per_country=rules.prepare_current_national_production.output.production_per_country,
     output:
         current_energy_demand="results/aggregated/current_industrial_energy_demand_per_country.csv"
     log:
@@ -131,7 +131,7 @@ rule prepare_sector_ratios_intermediate:
     input:
         industry_sector_ratios=rules.prepare_sector_ratios.output.industry_sector_ratios,
         industrial_energy_demand_per_country_today=rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
-        industrial_production_per_country=rules.prepare_future_aggregated_production.output.future,
+        industrial_production_per_country=rules.prepare_future_national_production.output.future,
     output:
         industry_sector_ratios="resources/automatic/prepare/sector_ratios_intermediate_{year}.csv",
     log:

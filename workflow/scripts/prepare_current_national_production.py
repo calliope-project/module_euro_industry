@@ -48,6 +48,7 @@ import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
+import _schemas
 import country_converter as coco
 import numpy as np
 import pandas as pd
@@ -235,7 +236,7 @@ def industry_production_per_country(country, year, eurostat_dir, jrc_dir, snakem
     return demand
 
 
-def industry_production(countries, year, eurostat_dir, jrc_dir):
+def industry_production(year, eurostat_dir, jrc_dir):
     func = partial(
         industry_production_per_country,
         year=year,
@@ -243,10 +244,11 @@ def industry_production(countries, year, eurostat_dir, jrc_dir):
         jrc_dir=jrc_dir,
         snakemake=snakemake,
     )
+    countries_a2 = coco.convert(_schemas.PYPSA_EUR_COUNTRIES, src="iso3", to="iso2")
+    demand_l = [func(c) for c in countries_a2]
 
-    demand_l = [func(c) for c in countries]
-
-    demand = pd.concat(demand_l, axis=1).T
+    demand = pd.concat(demand_l, axis="columns").T
+    demand.index = coco.convert(demand.index, src="iso2", to="iso3")
     demand.index.name = "kton/a"
     return demand
 
@@ -290,7 +292,6 @@ def separate_basic_chemicals(ammonia_path, demand, year, params):
 
 
 def main(
-    countries: list[str],
     params: dict,
     jrc_dir: str,
     eurostat_dir: str,
@@ -298,7 +299,7 @@ def main(
     output_path: str,
 ):
     year = params["reference_year"]
-    demand = industry_production(countries, year, eurostat_dir, jrc_dir)
+    demand = industry_production(year, eurostat_dir, jrc_dir)
     separate_basic_chemicals(ammonia_production, demand, year, params)
     demand.fillna(0.0, inplace=True)
 
@@ -307,7 +308,6 @@ def main(
 
 if __name__ == "__main__":
     main(
-        countries=snakemake.params.countries,
         params=snakemake.params.industry,
         jrc_dir=snakemake.input.jrc_dir,
         eurostat_dir=snakemake.input.eurostat_dir,
