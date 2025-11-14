@@ -1,4 +1,9 @@
 # Module settings that users cannot modify.
+crs:
+  geographic: "EPSG:4326"
+population:
+  epoch: 2020
+  resolution: 1000
 resources:
   automatic:
     # Links for automatically downloaded files
@@ -14,6 +19,3 @@ resources:
     non_eu:
       cement: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/cement-plants-noneu.csv"
       refineries: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/refineries-noneu.csv"
-population:
-  epoch: 2020
-  resolution: 1000

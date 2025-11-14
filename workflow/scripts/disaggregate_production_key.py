@@ -92,7 +92,7 @@ def prepare_hotmaps_database(regions: gpd.GeoDataFrame):
 
     df["coordinates"] = gpd.GeoSeries.from_wkt(df["coordinates"])
 
-    gdf = gpd.GeoDataFrame(df, geometry="coordinates", crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry="coordinates", crs=regions.crs)
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
     # the .sjoin can lead to duplicates if a geom is in two overlapping regions
@@ -130,7 +130,7 @@ def prepare_gem_database(regions: gpd.GeoDataFrame):
         .rename(columns={0: "lat", 1: "lon"})
     )
     geometry = gpd.points_from_xy(latlon["lon"], latlon["lat"])
-    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs=regions.crs)
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
     return gdf
@@ -141,7 +141,7 @@ def prepare_ammonia_database(regions: gpd.GeoDataFrame):
     df = pd.read_csv(snakemake.input.ammonia, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
-    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs=regions.crs)
 
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
@@ -153,7 +153,7 @@ def prepare_cement_supplement(regions: gpd.GeoDataFrame):
     df = pd.read_csv(snakemake.input.cement_supplement, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
-    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs=regions.crs)
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
     return gdf
@@ -164,7 +164,7 @@ def prepare_refineries_supplement(regions):
     df = pd.read_csv(snakemake.input.refineries_supplement, index_col=0)
 
     geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
-    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs=regions.crs)
     gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
 
     return gdf
@@ -328,24 +328,25 @@ def build_nodal_distribution_key(
     return keys
 
 
-if __name__ == "__main__":
-
-    # countries = snakemake.params.countries
-
+def main():
+    """Core production disaggregation function."""
     regions = gpd.read_parquet(snakemake.input.regions_onshore).set_index("shape_id")
+    # Ensure shapes are coordinate-compatible
+    regions = regions.to_crs(snakemake.params.geographic_crs)
 
+    # Prepare individual subsector proxies
     hotmaps = prepare_hotmaps_database(regions)
-
     gem = prepare_gem_database(regions)
-
     ammonia = prepare_ammonia_database(regions)
-
     cement = prepare_cement_supplement(regions)
-
     refineries = prepare_refineries_supplement(regions)
 
+    # Disaggregate per shape_id
     keys = build_nodal_distribution_key(
         hotmaps, gem, ammonia, cement, refineries, regions
     )
-
     keys.to_csv(snakemake.output.industrial_distribution_key)
+
+
+if __name__ == "__main__":
+    main()
