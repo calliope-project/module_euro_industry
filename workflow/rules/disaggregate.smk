@@ -1,4 +1,4 @@
-
+"""Rules for disaggregating statistics at national level to user-provided shapes."""
 
 rule disaggregate_production_rates:
     message:
@@ -25,7 +25,7 @@ rule disaggregate_production_rates:
 
 rule disaggregate_current_energy_demand:
     message:
-        "{wildcards.shape}: disaggregating current energy demand"
+        "{wildcards.shape}: disaggregating current energy demand."
     input:
         shapes=rules.prepare_shapes.output.shapes,
         production_rates=rules.disaggregate_production_rates.output.production_rates,
@@ -41,6 +41,8 @@ rule disaggregate_current_energy_demand:
 
 
 rule disaggregate_future_production:
+    message:
+        "{wildcards.shape}/{wildcards.year}: disaggregating future production."
     input:
         shapes=rules.prepare_shapes.output.shapes,
         production_rates=rules.disaggregate_production_rates.output.production_rates,
@@ -56,6 +58,8 @@ rule disaggregate_future_production:
 
 
 rule disaggregate_future_energy_demand:
+    message:
+        "{wildcards.shape}/{wildcards.year}: disaggregating energy demand."
     input:
         shapes=rules.prepare_shapes.output.shapes,
         sector_rates=rules.prepare_future_europe_sector_rates.output.sector_rates,

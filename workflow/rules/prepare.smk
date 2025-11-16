@@ -51,7 +51,7 @@ rule prepare_coke_transformation:
     input:
         eurostat_dir="resources/automatic/eurostat",
     output:
-        coke="resources/automatic/prepare/coke/transformation.csv"
+        coke="resources/automatic/coke/transformation.csv"
     log:
         "logs/prepare/prepare_coke_transformation.log"
     conda:
@@ -98,6 +98,8 @@ rule prepare_future_europe_production:
 
 
 rule prepare_current_europe_energy_demand:
+    message:
+        "Preparing current energy demand for European nations."
     params:
         industry=config["industry"],
         ammonia=config["ammonia"],
@@ -115,8 +117,10 @@ rule prepare_current_europe_energy_demand:
         "../scripts/prepare_current_europe_energy_demand.py"
 
 
-# TODO: rename to prepare_current_sector_rates
+# TODO: rename to rates mentioning it's 'best in class rates' or something like that?
 rule prepare_sector_ratios:
+    message:
+        "Preparing average energy demand rates per industrial subsector."
     params:
         industry=config["industry"],
         ammonia=config["ammonia"],
@@ -124,7 +128,7 @@ rule prepare_sector_ratios:
         ammonia_production=rules.prepare_ammonia_production.output.production,
         idees="resources/automatic/jrc_idees",
     output:
-        industry_sector_ratios="resources/automatic/prepare/sector_ratios.csv",
+        industry_sector_ratios="resources/automatic/europe/sector_ratios_eu27.csv",
     log:
         "logs/prepare/prepare_sector_ratios.log",
     conda:
@@ -134,6 +138,8 @@ rule prepare_sector_ratios:
 
 
 rule prepare_future_europe_sector_rates:
+    message:
+        "Preparing future rates by interpolating between current and future best-in-class consumption."
     params:
         industry=config["industry"],
     input:
