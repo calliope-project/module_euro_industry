@@ -249,7 +249,7 @@ def add_coke_ovens(demand, fn, year, factor=0.75):
     factor (float, optional): The proportion of coke ovens energy consumption to add to the
                               integrated steelworks demand. Defaults to 0.75.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame: The updated `demand` DataFrame with the coke ovens energy
     consumption added to the integrated steelworks energy demand.
@@ -296,7 +296,6 @@ def main():
     demand.sort_index(axis=1, inplace=True)
 
     demand.to_csv(snakemake.output.energy_demand)
-
 
 
 if __name__ == "__main__":

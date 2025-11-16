@@ -25,7 +25,7 @@ sys.stderr = open(snakemake.log[0], "w", buffering=1)
 cc = coco.CountryConverter()
 
 
-def main(input_path: str, output_path: str)-> None:
+def main(input_path: str, output_path: str) -> None:
     """Extracts the annual ammonia production per country in ktonN/a.
 
     The data is converted to ktonNH3/a.
@@ -55,7 +55,4 @@ def main(input_path: str, output_path: str)-> None:
 
 
 if __name__ == "__main__":
-    main(
-        input_path=snakemake.input.usgs,
-        output_path=snakemake.output.production,
-    )
+    main(input_path=snakemake.input.usgs, output_path=snakemake.output.production)

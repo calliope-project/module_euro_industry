@@ -31,12 +31,12 @@ def eurostat_per_country(input_eurostat: str, country: str) -> pd.DataFrame:
     country : str
         Country code for the specific country.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame
         Concatenated energy balance data for the specified country.
 
-    Notes
+    Notes:
     -----
     - The function reads `<input_eurostat>/<country>.-Energy-balance-sheets-April-2023-edition.xlsb`
     - It removes the "Cover" sheet from the data and concatenates all the remaining sheets into a single DataFrame.
@@ -64,12 +64,12 @@ def build_eurostat(input_eurostat: str) -> pd.DataFrame:
     input_eurostat : str
         Path to the Eurostat database.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame
         Multi-index DataFrame containing energy data for all countries in TWh/a.
 
-    Notes
+    Notes:
     -----
     - The function first renames the countries in the input list using the `idees_rename` mapping and removes "CH".
     - It then reads country-wise data using :func:`eurostat_per_country` into a single DataFrame.

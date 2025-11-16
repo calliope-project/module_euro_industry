@@ -40,28 +40,22 @@ if __name__ == "__main__":
         snakemake.input.sector_rates, header=[0, 1], index_col=0
     )
     # material demand per node and industry (Mton/a)
-    shape_prod_df = (
-        pd.read_csv(snakemake.input.future_production, index_col=0) / 1e3
-    )
+    shape_prod_df = pd.read_csv(snakemake.input.future_production, index_col=0) / 1e3
     # energy demand today to get current electricity
-    shape_curr_dem_df = pd.read_csv(
-        snakemake.input.current_energy_demand, index_col=0
-    )
+    shape_curr_dem_df = pd.read_csv(snakemake.input.current_energy_demand, index_col=0)
     shape_subsec_rate_df = pd.concat(
         {
             idx: sector_ratios[shapes_df.loc[idx, "country_id"]]
             for idx in shape_prod_df.index
         },
-        axis="columns"
+        axis="columns",
     )
     shape_prod_df = shape_prod_df.stack()
     shape_prod_df.index.names = [None, None]  # FIXME: bad practice. fix with tidy data
 
     # final energy consumption per region and industry subsector (TWh/a)
     shape_fut_dem_df = (
-        (shape_subsec_rate_df.multiply(shape_prod_df))
-        .T.groupby(level=0)
-        .sum()
+        (shape_subsec_rate_df.multiply(shape_prod_df)).T.groupby(level=0).sum()
     )
 
     rename_sectors = {

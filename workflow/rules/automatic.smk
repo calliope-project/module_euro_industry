@@ -1,5 +1,6 @@
 """Rules to used to download automatic resource files."""
 
+
 rule download_eurostat:
     message:
         "Download stable Eurostat energy balances."
@@ -13,6 +14,7 @@ rule download_eurostat:
         "../envs/shell.yaml"
     shell:
         'curl -sSLo {output.file} "{params.url}"'
+
 
 rule download_jrc_idees:
     message:
@@ -63,7 +65,7 @@ rule download_ammonia_plants:
     message:
         "Download ammonia plants as collected by PyPSA-Eur."
     params:
-        url=internal["resources"]["automatic"]["ammonia"]["plants"]
+        url=internal["resources"]["automatic"]["ammonia"]["plants"],
     output:
         file="resources/automatic/ammonia/plants.csv",
     log:
@@ -138,7 +140,9 @@ rule download_GHSL_population:
     message:
         "Download the Global Human Settlement Layer population raster."
     params:
-        url=get_ghsl_url(internal["population"]["epoch"], internal["population"]["resolution"]),
+        url=get_ghsl_url(
+            internal["population"]["epoch"], internal["population"]["resolution"]
+        ),
     output:
         file=temp("resources/automatic/GHSL.zip"),
     log:
@@ -153,13 +157,13 @@ rule unzip_directory:
     message:
         "Unzipping {wildcards.directory}."
     input:
-        zip_file="resources/automatic/{directory}.zip"
+        zip_file="resources/automatic/{directory}.zip",
     output:
-        directory("resources/automatic/{directory}/")
+        directory("resources/automatic/{directory}/"),
     wildcard_constraints:
         directory="|".join({"eurostat", "jrc_idees"}),
     log:
-        "logs/automatic/unzip_directory_{directory}.log"
+        "logs/automatic/unzip_directory_{directory}.log",
     conda:
         "../envs/industry.yaml"
     script:
@@ -171,13 +175,13 @@ rule unzip_GHSL:
     message:
         "Unzipping {params.file}."
     params:
-        file=f"GHS_POP_E{internal['population']['epoch']}_GLOBE_R2023A_54009_{internal['population']['resolution']}_V1_0.tif"
+        file=f"GHS_POP_E{internal['population']['epoch']}_GLOBE_R2023A_54009_{internal['population']['resolution']}_V1_0.tif",
     input:
-        zip_file="resources/automatic/GHSL.zip"
+        zip_file="resources/automatic/GHSL.zip",
     output:
-        "resources/automatic/GHSL.tif"
+        "resources/automatic/GHSL.tif",
     log:
-        "logs/automatic/unzip_GHSL.log"
+        "logs/automatic/unzip_GHSL.log",
     conda:
         "../envs/industry.yaml"
     script:

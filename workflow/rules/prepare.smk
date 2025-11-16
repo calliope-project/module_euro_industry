@@ -1,5 +1,6 @@
 """Rules in this file focus on parsing and cleaning data."""
 
+
 rule prepare_population:
     message:
         "{wildcards.shape}: preparing population raster."
@@ -9,7 +10,7 @@ rule prepare_population:
     output:
         path="resources/automatic/shapes/{shape}/population.tif",
     log:
-        "logs/{shape}/prepare_population.log"
+        "logs/{shape}/prepare_population.log",
     wrapper:
         "v7.9.0/geo/rasterio/clip"
 
@@ -19,11 +20,11 @@ rule prepare_shapes:
         "{wildcards.shape}: preparing polygons for European industry disaggregation."
     input:
         shapes="resources/user/{shape}/shapes.parquet",
-        population=rules.prepare_population.output.path
+        population=rules.prepare_population.output.path,
     output:
-        shapes=temp("resources/automatic/shapes/{shape}/shapes.parquet")
+        shapes=temp("resources/automatic/shapes/{shape}/shapes.parquet"),
     log:
-        "logs/{shape}/prepare_shapes.log"
+        "logs/{shape}/prepare_shapes.log",
     conda:
         "../envs/industry.yaml"
     script:
@@ -38,7 +39,7 @@ rule prepare_ammonia_production:
     output:
         production="resources/automatic/ammonia/production.csv",
     log:
-        "logs/prepare/prepare_ammonia_production.log"
+        "logs/prepare/prepare_ammonia_production.log",
     conda:
         "../envs/industry.yaml"
     script:
@@ -51,9 +52,9 @@ rule prepare_coke_transformation:
     input:
         eurostat_dir="resources/automatic/eurostat",
     output:
-        coke="resources/automatic/coke/transformation.csv"
+        coke="resources/automatic/coke/transformation.csv",
     log:
-        "logs/prepare/prepare_coke_transformation.log"
+        "logs/prepare/prepare_coke_transformation.log",
     conda:
         "../envs/industry.yaml"
     script:
@@ -92,7 +93,7 @@ rule prepare_future_europe_production:
     log:
         "logs/{year}/prepare_future_europe_production.log",
     conda:
-        "../envs/industry.yaml",
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_future_europe_production.py"
 
@@ -108,9 +109,9 @@ rule prepare_current_europe_energy_demand:
         jrc="resources/automatic/jrc_idees",
         industrial_production_per_country=rules.prepare_current_europe_production.output.production,
     output:
-        energy_demand="resources/automatic/europe/current_energy_demand.csv"
+        energy_demand="resources/automatic/europe/current_energy_demand.csv",
     log:
-        "logs/prepare/prepare_current_europe_energy_demand.log"
+        "logs/prepare/prepare_current_europe_energy_demand.log",
     conda:
         "../envs/industry.yaml"
     script:
@@ -149,7 +150,7 @@ rule prepare_future_europe_sector_rates:
     output:
         sector_rates="resources/automatic/europe/{year}/sector_rates.csv",
     log:
-         "logs/{year}/prepare_future_europe_sector_rates.log"
+        "logs/{year}/prepare_future_europe_sector_rates.log",
     conda:
         "../envs/industry.yaml"
     script:

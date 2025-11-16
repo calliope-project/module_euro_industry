@@ -40,9 +40,7 @@ def disaggregate_current_energy_demand(
         output_path (str): resulting regional energy demand.
     """
     shapes_gdf = gpd.read_parquet(shapes_path)
-    national_demand = pd.read_csv(
-        europe_energy_demand_path, header=[0, 1], index_col=0
-    )
+    national_demand = pd.read_csv(europe_energy_demand_path, header=[0, 1], index_col=0)
     ratios_df = pd.read_csv(production_rates_path, index_col=0)
 
     disaggregated_demand = pd.DataFrame(

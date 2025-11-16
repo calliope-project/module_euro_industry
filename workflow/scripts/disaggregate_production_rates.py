@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
+
 def locate_missing_industrial_sites(df):
     """Locate industrial sites without valid locations based on city and countries.
 
@@ -174,9 +175,7 @@ def prepare_refineries_supplement(regions):
     return gdf
 
 
-def build_nodal_distribution_key(
-    hotmaps, gem, ammonia, cement, refineries, regions
-):
+def build_nodal_distribution_key(hotmaps, gem, ammonia, cement, refineries, regions):
     """Build nodal distribution keys for each sector."""
     sectors = hotmaps.Subsector.unique()
     countries = regions["country_id"].unique()
@@ -201,7 +200,11 @@ def build_nodal_distribution_key(
                 # assume 20% quantile for missing values
                 emissions = emissions.fillna(emissions.quantile(0.2))
                 key = emissions / emissions.sum()
-            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
+            key = (
+                key.groupby(facilities.shape_id)
+                .sum()
+                .reindex(regions_ct, fill_value=0.0)
+            )
         elif sector == "Cement" and country in cement["country_id"].unique():
             facilities = cement.query("country_id == @country")
             production = facilities["Cement [kt/a]"]
@@ -209,7 +212,11 @@ def build_nodal_distribution_key(
                 key = pd.Series(1 / len(facilities), facilities.index)
             else:
                 key = production / production.sum()
-            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
+            key = (
+                key.groupby(facilities.shape_id)
+                .sum()
+                .reindex(regions_ct, fill_value=0.0)
+            )
         elif sector == "Refineries" and country in refineries["country_id"].unique():
             facilities = refineries.query("country_id == @country")
             production = facilities["Capacity [bbl/day]"]
@@ -217,7 +224,11 @@ def build_nodal_distribution_key(
                 key = pd.Series(1 / len(facilities), facilities.index)
             else:
                 key = production / production.sum()
-            key = key.groupby(facilities.shape_id).sum().reindex(regions_ct, fill_value=0.0)
+            key = (
+                key.groupby(facilities.shape_id)
+                .sum()
+                .reindex(regions_ct, fill_value=0.0)
+            )
         else:
             key = keys.loc[regions_ct, "population"]
 
@@ -323,7 +334,11 @@ def build_nodal_distribution_key(
                 # assume 50% of the minimum production for missing values
                 production = production.fillna(0.5 * facilities["Ammonia [kt/a]"].min())
                 key = production / production.sum()
-            key = key.groupby(facilities["shape_id"]).sum().reindex(regions_ct, fill_value=0.0)
+            key = (
+                key.groupby(facilities["shape_id"])
+                .sum()
+                .reindex(regions_ct, fill_value=0.0)
+            )
         else:
             key = 0.0
 

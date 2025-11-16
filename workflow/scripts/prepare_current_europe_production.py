@@ -48,6 +48,7 @@ The following subcategories [kton/a] are considered:
 - Chlorine
 - Methanol
 """
+
 import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
@@ -199,7 +200,7 @@ def get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake):
     fn = f"{jrc_dir}/EU27/JRC-IDEES-2021_Industry_EU27.xlsx"
 
     df = pd.read_excel(fn, sheet_name="Ind_Summary", index_col=0, header=0).squeeze(
-            "columns"
+        "columns"
     )
 
     assert df.index[49] == "by sector"
@@ -218,7 +219,7 @@ def industry_production_per_country(country, year, eurostat_dir, jrc_dir, snakem
         fn = f"{jrc_dir}/{jrc_country}/JRC-IDEES-2021_Industry_{jrc_country}.xlsx"
         sheet = SUB_SHEET_NAME_DICT[sector]
         df = pd.read_excel(fn, sheet_name=sheet, index_col=0, header=0).squeeze(
-                "columns"
+            "columns"
         )
 
         year_i = df.columns.get_loc(year)

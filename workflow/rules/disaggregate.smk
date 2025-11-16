@@ -1,11 +1,12 @@
 """Rules for disaggregating statistics at national level to user-provided shapes."""
 
+
 rule disaggregate_production_rates:
     message:
         "{wildcards.shape}: estimating production rates per shape using proxies."
     params:
         hotmaps_locate_missing=config["industry"]["hotmaps_locate_missing"],
-        geographic_crs=internal["crs"]["geographic"]
+        geographic_crs=internal["crs"]["geographic"],
     input:
         shapes=rules.prepare_shapes.output.shapes,
         hotmaps=rules.download_hotmaps.output.file,

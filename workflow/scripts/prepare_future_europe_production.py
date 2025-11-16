@@ -85,12 +85,10 @@ def main(params: dict, year: int, input_file: str, output_file: str) -> None:
     production[key_sec] = total_aluminium - production[key_pri]
 
     production["HVC (mechanical recycling)"] = (
-        get(params["HVC_mechanical_recycling_fraction"], year)
-        * production["HVC"]
+        get(params["HVC_mechanical_recycling_fraction"], year) * production["HVC"]
     )
     production["HVC (chemical recycling)"] = (
-        get(params["HVC_chemical_recycling_fraction"], year)
-        * production["HVC"]
+        get(params["HVC_chemical_recycling_fraction"], year) * production["HVC"]
     )
 
     production["HVC"] *= get(params["HVC_primary_fraction"], year)
@@ -99,10 +97,9 @@ def main(params: dict, year: int, input_file: str, output_file: str) -> None:
 
 
 if __name__ == "__main__":
-
     main(
         params=snakemake.params.industry,
         year=int(snakemake.wildcards.year),
         input_file=snakemake.input.current,
-        output_file=snakemake.output.production
+        output_file=snakemake.output.production,
     )
