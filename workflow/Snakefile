@@ -9,6 +9,7 @@ min_version("8.10")
 configfile: workflow.source_path("../config/config.yaml")
 
 
+# TODO: add config validation
 # Validate the configuration using the schema file.
 # validate(config, workflow.source_path("internal/config.schema.yaml"))
 

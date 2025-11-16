@@ -50,7 +50,7 @@ rule download_ammonia_usgs:
     params:
         url=internal["resources"]["automatic"]["ammonia"]["usgs"],
     output:
-        file="resources/automatic/ammonia/usgs.xlsx",
+        file=temp("resources/automatic/ammonia/usgs.xlsx"),
     log:
         "logs/automatic/download_ammonia_usgs.log",
     conda:
@@ -166,6 +166,7 @@ rule unzip_directory:
         "../scripts/unzip.py"
 
 
+# TODO: standardised epoch and resolution, or user configured?
 rule unzip_GHSL:
     message:
         "Unzipping {params.file}."

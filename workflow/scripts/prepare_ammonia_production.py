@@ -53,5 +53,5 @@ def main(input_path: str, output_path: str)-> None:
 if __name__ == "__main__":
     main(
         input_path=snakemake.input.usgs,
-        output_path=snakemake.output.prepared,
+        output_path=snakemake.output.production,
     )

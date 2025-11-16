@@ -294,7 +294,7 @@ def main():
     demand.index.name = "TWh/a"
     demand.sort_index(axis=1, inplace=True)
 
-    demand.to_csv(snakemake.output.current_energy_demand)
+    demand.to_csv(snakemake.output.energy_demand)
 
 
 

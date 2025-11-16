@@ -27,7 +27,7 @@ rule disaggregate_current_energy_demand:
     input:
         shapes=rules.prepare_shapes.output.shapes,
         shape_ratios=rules.disaggregate_production_ratios.output.shape_ratios,
-        current_national_energy_demand=rules.prepare_current_national_energy_demand.output.current_energy_demand,
+        current_national_energy_demand=rules.prepare_current_europe_energy_demand.output.energy_demand,
     output:
         demand_per_shape="results/{shape}/current_industrial_energy_demand.csv",
     log:
@@ -42,7 +42,7 @@ rule disaggregate_future_production:
     input:
         shapes=rules.prepare_shapes.output.shapes,
         ratios=rules.disaggregate_production_ratios.output.shape_ratios,
-        future_national_production=rules.prepare_future_national_production.output.future,
+        future_national_production=rules.prepare_future_europe_production.output.production,
     output:
         production="results/{shape}/{year}/future_production.csv",
     log:

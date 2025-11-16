@@ -100,5 +100,5 @@ if __name__ == "__main__":
         params=snakemake.params.industry,
         year=int(snakemake.wildcards.year),
         input_file=snakemake.input.current,
-        output_file=snakemake.output.future
+        output_file=snakemake.output.production
     )

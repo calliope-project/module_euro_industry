@@ -312,5 +312,5 @@ if __name__ == "__main__":
         jrc_dir=snakemake.input.jrc_dir,
         eurostat_dir=snakemake.input.eurostat_dir,
         ammonia_production=snakemake.input.ammonia_production,
-        output_path=snakemake.output.production_per_country,
+        output_path=snakemake.output.production,
     )
