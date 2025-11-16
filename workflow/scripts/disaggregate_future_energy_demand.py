@@ -21,6 +21,7 @@ For each bus, the following carriers are considered:
 
 which can later be used as values for the industry load.
 """
+
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -32,31 +33,32 @@ if TYPE_CHECKING:
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
 if __name__ == "__main__":
-    shapes_df = gpd.read_parquet(snakemake.input.shapes)
+    shapes_df = gpd.read_parquet(snakemake.input.shapes).set_index("shape_id")
     # import ratios
     sector_ratios = pd.read_csv(
         snakemake.input.sector_ratios, header=[0, 1], index_col=0
     )
     # material demand per node and industry (Mton/a)
-    nodal_production = (
+    shape_prod_df = (
         pd.read_csv(snakemake.input.disaggregated_future_production, index_col=0) / 1e3
     )
     # energy demand today to get current electricity
-    current_energy_demand = pd.read_csv(
+    shape_curr_dem_df = pd.read_csv(
         snakemake.input.disaggregated_current_energy_demand, index_col=0
     )
-    breakpoint()
-    nodal_sector_ratios = pd.concat(
-        {node: sector_ratios[node[:2]] for node in nodal_production.index},
-        axis="columns",
+    shape_subsec_rate_df = pd.concat(
+        {
+            idx: sector_ratios[shapes_df.loc[idx, "country_id"]]
+            for idx in shape_prod_df.index
+        },
+        axis="columns"
     )
+    shape_prod_df = shape_prod_df.stack()
+    shape_prod_df.index.names = [None, None]  # FIXME: bad practice. fix with tidy data
 
-    nodal_production_stacked = nodal_production.stack()
-    nodal_production_stacked.index.names = [None, None]
-
-    # final energy consumption per node and industry (TWh/a)
-    nodal_df = (
-        (nodal_sector_ratios.multiply(nodal_production_stacked))
+    # final energy consumption per region and industry subsector (TWh/a)
+    shape_fut_dem_df = (
+        (shape_subsec_rate_df.multiply(shape_prod_df))
         .T.groupby(level=0)
         .sum()
     )
@@ -66,11 +68,11 @@ if __name__ == "__main__":
         "biomass": "solid biomass",
         "heat": "low-temperature heat",
     }
-    nodal_df.rename(columns=rename_sectors, inplace=True)
+    shape_fut_dem_df = shape_fut_dem_df.rename(columns=rename_sectors)
 
-    nodal_df["current electricity"] = current_energy_demand["electricity"]
+    shape_fut_dem_df["current electricity"] = shape_curr_dem_df["electricity"]
 
-    nodal_df.index.name = "TWh/a (MtCO2/a)"
+    shape_fut_dem_df.index.name = "TWh/a (MtCO2/a)"
 
-    fn = snakemake.output.industrial_energy_demand_per_node
-    nodal_df.to_csv(fn, float_format="%.2f")
+    fn = snakemake.output.energy_demand
+    shape_fut_dem_df.to_csv(fn, float_format="%.2f")

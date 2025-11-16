@@ -107,6 +107,7 @@ rule prepare_current_national_energy_demand:
         "../scripts/prepare_current_national_energy_demand.py"
 
 
+# TODO: rename to rates
 rule prepare_sector_ratios:
     params:
         industry=config["industry"],
@@ -122,6 +123,7 @@ rule prepare_sector_ratios:
         "../envs/prepare.yaml"
     script:
         "../scripts/prepare_sector_ratios.py"
+
 
 # TODO: rename to subsector ratios per country or something similar.
 rule prepare_sector_ratios_intermediate:
