@@ -21,7 +21,7 @@ rule prepare_shapes:
         shapes="resources/user/{shape}/shapes.parquet",
         population=rules.prepare_population.output.path
     output:
-        shapes="resources/automatic/shapes/{shape}/shapes.parquet"
+        shapes=temp("resources/automatic/shapes/{shape}/shapes.parquet")
     log:
         "logs/{shape}/prepare_shapes.log"
     conda:
@@ -115,7 +115,7 @@ rule prepare_current_europe_energy_demand:
         "../scripts/prepare_current_europe_energy_demand.py"
 
 
-# TODO: rename to rates
+# TODO: rename to prepare_current_sector_rates
 rule prepare_sector_ratios:
     params:
         industry=config["industry"],
@@ -133,8 +133,7 @@ rule prepare_sector_ratios:
         "../scripts/prepare_sector_ratios.py"
 
 
-# TODO: rename to subsector ratios per country or something similar.
-rule prepare_sector_ratios_intermediate:
+rule prepare_future_europe_sector_rates:
     params:
         industry=config["industry"],
     input:
@@ -142,10 +141,10 @@ rule prepare_sector_ratios_intermediate:
         industrial_energy_demand_per_country_today=rules.prepare_current_europe_energy_demand.output.energy_demand,
         industrial_production_per_country=rules.prepare_future_europe_production.output.production,
     output:
-        industry_sector_ratios="resources/automatic/prepare/sector_ratios_intermediate_{year}.csv",
+        sector_rates="resources/automatic/europe/{year}/sector_rates.csv",
     log:
-         "logs/prepare/prepare_sector_ratios_intermediate_{year}.log"
+         "logs/{year}/prepare_future_europe_sector_rates.log"
     conda:
         "../envs/prepare.yaml"
     script:
-        "../scripts/prepare_sector_ratios_intermediate.py"
+        "../scripts/prepare_future_europe_sector_rates.py"

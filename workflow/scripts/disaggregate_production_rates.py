@@ -330,22 +330,22 @@ def build_nodal_distribution_key(
 
 def main():
     """Core production disaggregation function."""
-    regions = gpd.read_parquet(snakemake.input.regions_onshore).set_index("shape_id")
+    shapes = gpd.read_parquet(snakemake.input.shapes).set_index("shape_id")
     # Ensure shapes are coordinate-compatible
-    regions = regions.to_crs(snakemake.params.geographic_crs)
+    shapes = shapes.to_crs(snakemake.params.geographic_crs)
 
     # Prepare individual subsector proxies
-    hotmaps = prepare_hotmaps_database(regions)
-    gem = prepare_gem_database(regions)
-    ammonia = prepare_ammonia_database(regions)
-    cement = prepare_cement_supplement(regions)
-    refineries = prepare_refineries_supplement(regions)
+    hotmaps = prepare_hotmaps_database(shapes)
+    gem = prepare_gem_database(shapes)
+    ammonia = prepare_ammonia_database(shapes)
+    cement = prepare_cement_supplement(shapes)
+    refineries = prepare_refineries_supplement(shapes)
 
     # Disaggregate per shape_id
     keys = build_nodal_distribution_key(
-        hotmaps, gem, ammonia, cement, refineries, regions
+        hotmaps, gem, ammonia, cement, refineries, shapes
     )
-    keys.to_csv(snakemake.output.shape_ratios)
+    keys.to_csv(snakemake.output.production_rates)
 
 
 if __name__ == "__main__":

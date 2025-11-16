@@ -1,32 +1,32 @@
 
 
-rule disaggregate_production_ratios:
+rule disaggregate_production_rates:
     message:
-        "Disaggregate industrial production using proxies (population, facilities, emissions)."
+        "{wildcards.shape}: disaggregating production using proxies."
     params:
         hotmaps_locate_missing=config["industry"]["hotmaps_locate_missing"],
         geographic_crs=internal["crs"]["geographic"]
     input:
-        regions_onshore=rules.prepare_shapes.output.shapes,
+        shapes=rules.prepare_shapes.output.shapes,
         hotmaps=rules.download_hotmaps.output.file,
         gem_gspt=rules.download_GEM_SPT.output.file,
         ammonia=rules.download_ammonia_plants.output.file,
         cement_supplement=rules.download_cement_non_eu.output.file,
         refineries_supplement=rules.download_refineries_non_eu.output.file,
     output:
-        shape_ratios="resources/automatic/shapes/{shape}/disaggregated_production_key.csv",
+        production_rates="resources/automatic/shapes/{shape}/production_rates.csv",
     log:
-        "logs/{shape}/disaggregate_production_ratios.log",
+        "logs/{shape}/disaggregate_production_rates.log",
     conda:
         "../envs/prepare.yaml"
     script:
-        "../scripts/disaggregate_production_ratios.py"
+        "../scripts/disaggregate_production_rates.py"
 
 
 rule disaggregate_current_energy_demand:
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        shape_ratios=rules.disaggregate_production_ratios.output.shape_ratios,
+        shape_ratios=rules.disaggregate_production_rates.output.production_rates,
         current_national_energy_demand=rules.prepare_current_europe_energy_demand.output.energy_demand,
     output:
         demand_per_shape="results/{shape}/current_industrial_energy_demand.csv",
@@ -41,7 +41,7 @@ rule disaggregate_current_energy_demand:
 rule disaggregate_future_production:
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        ratios=rules.disaggregate_production_ratios.output.shape_ratios,
+        ratios=rules.disaggregate_production_rates.output.production_rates,
         future_national_production=rules.prepare_future_europe_production.output.production,
     output:
         production="results/{shape}/{year}/future_production.csv",
@@ -56,7 +56,7 @@ rule disaggregate_future_production:
 rule disaggregate_future_energy_demand:
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        sector_ratios=rules.prepare_sector_ratios_intermediate.output.industry_sector_ratios,
+        sector_ratios=rules.prepare_future_europe_sector_rates.output.sector_rates,
         disaggregated_future_production=rules.disaggregate_future_production.output.production,
         disaggregated_current_energy_demand=rules.disaggregate_current_energy_demand.output.demand_per_shape,
     output:
