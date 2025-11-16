@@ -115,7 +115,9 @@ EU27 = cc.EU27as("ISO3").ISO3.tolist()
 JRC_NAMES = {"GR": "EL", "GB": "UK"}
 
 
-def _get_industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammonia):
+def _get_industrial_energy_demand_per_country(
+    country, year, jrc_dir, endogenous_ammonia
+):
     jrc_country = JRC_NAMES.get(country, country)
     fn = f"{jrc_dir}/{jrc_country}/JRC-IDEES-2021_EnergyBalance_{jrc_country}.xlsx"
 
