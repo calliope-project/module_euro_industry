@@ -60,7 +60,7 @@ def disaggregate_production(
 if __name__ == "__main__":
     disaggregate_production(
         shapes_path=snakemake.input.shapes,
-        national_production_path=snakemake.input.future_national_production,
-        ratios_path=snakemake.input.ratios,
+        national_production_path=snakemake.input.future_europe_production,
+        ratios_path=snakemake.input.production_rates,
         output_path=snakemake.output.production,
     )

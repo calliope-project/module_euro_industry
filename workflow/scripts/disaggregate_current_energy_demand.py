@@ -24,16 +24,26 @@ sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
 def disaggregate_current_energy_demand(
     shapes_path: str,
-    ratios_path: str,
-    national_energy_demand_path: str,
+    production_rates_path: str,
+    europe_energy_demand_path: str,
     output_path: str,
 ):
-    """Use ratios to disaggregate national energy demand for industry subsectors."""
+    """Disaggregate current energy demand per shape.
+
+    Calculated using the following proxies:
+    - Production rates per region.
+
+    Args:
+        shapes_path (str): national regional disaggregation to use.
+        production_rates_path (str): estimated production rates per subnational region.
+        europe_energy_demand_path (str): national energy demand for European nations.
+        output_path (str): resulting regional energy demand.
+    """
     shapes_gdf = gpd.read_parquet(shapes_path)
     national_demand = pd.read_csv(
-        national_energy_demand_path, header=[0, 1], index_col=0
+        europe_energy_demand_path, header=[0, 1], index_col=0
     )
-    ratios_df = pd.read_csv(ratios_path, index_col=0)
+    ratios_df = pd.read_csv(production_rates_path, index_col=0)
 
     disaggregated_demand = pd.DataFrame(
         0.0, dtype=float, index=ratios_df.index, columns=national_demand.index
@@ -61,7 +71,7 @@ def disaggregate_current_energy_demand(
 if __name__ == "__main__":
     disaggregate_current_energy_demand(
         shapes_path=snakemake.input.shapes,
-        ratios_path=snakemake.input.shape_ratios,
-        national_energy_demand_path=snakemake.input.current_national_energy_demand,
-        output_path=snakemake.output.demand_per_shape,
+        production_rates_path=snakemake.input.production_rates,
+        europe_energy_demand_path=snakemake.input.current_europe_energy_demand,
+        output_path=snakemake.output.energy_demand,
     )

@@ -2,7 +2,7 @@
 
 rule disaggregate_production_rates:
     message:
-        "{wildcards.shape}: disaggregating production using proxies."
+        "{wildcards.shape}: estimating production rates per shape using proxies."
     params:
         hotmaps_locate_missing=config["industry"]["hotmaps_locate_missing"],
         geographic_crs=internal["crs"]["geographic"]
@@ -24,14 +24,16 @@ rule disaggregate_production_rates:
 
 
 rule disaggregate_current_energy_demand:
+    message:
+        "{wildcards.shape}: disaggregating current energy demand"
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        shape_ratios=rules.disaggregate_production_rates.output.production_rates,
-        current_national_energy_demand=rules.prepare_current_europe_energy_demand.output.energy_demand,
+        production_rates=rules.disaggregate_production_rates.output.production_rates,
+        current_europe_energy_demand=rules.prepare_current_europe_energy_demand.output.energy_demand,
     output:
-        demand_per_shape="results/{shape}/current_industrial_energy_demand.csv",
+        energy_demand="results/{shape}/current_industrial_energy_demand.csv",
     log:
-        "logs/disaggregated/disaggregate_current_energy_demand_{shape}.log",
+        "logs/{shape}/disaggregate_current_energy_demand.log",
     conda:
         "../envs/prepare.yaml"
     script:
@@ -41,12 +43,12 @@ rule disaggregate_current_energy_demand:
 rule disaggregate_future_production:
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        ratios=rules.disaggregate_production_rates.output.production_rates,
-        future_national_production=rules.prepare_future_europe_production.output.production,
+        production_rates=rules.disaggregate_production_rates.output.production_rates,
+        future_europe_production=rules.prepare_future_europe_production.output.production,
     output:
-        production="results/{shape}/{year}/future_production.csv",
+        production="results/{shape}/{year}/production.csv",
     log:
-        "logs/disaggregate/disaggregate_future_production_{shape}_{year}.log",
+        "logs/{shape}/{year}/disaggregate_future_production.log",
     conda:
         "../envs/prepare.yaml"
     script:
@@ -56,13 +58,13 @@ rule disaggregate_future_production:
 rule disaggregate_future_energy_demand:
     input:
         shapes=rules.prepare_shapes.output.shapes,
-        sector_ratios=rules.prepare_future_europe_sector_rates.output.sector_rates,
-        disaggregated_future_production=rules.disaggregate_future_production.output.production,
-        disaggregated_current_energy_demand=rules.disaggregate_current_energy_demand.output.demand_per_shape,
+        sector_rates=rules.prepare_future_europe_sector_rates.output.sector_rates,
+        future_production=rules.disaggregate_future_production.output.production,
+        current_energy_demand=rules.disaggregate_current_energy_demand.output.energy_demand,
     output:
-        energy_demand="results/{shape}/{year}/future_energy_demand.csv",
+        energy_demand="results/{shape}/{year}/energy_demand.csv",
     log:
-        "logs/disaggregate/disaggregate_future_industrial_energy_demand_{shape}_{year}.log",
+        "logs/{shape}/{year}/disaggregate_future_energy_demand.log",
     conda:
         "../envs/prepare.yaml"
     script:

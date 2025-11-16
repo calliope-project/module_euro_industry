@@ -36,15 +36,15 @@ if __name__ == "__main__":
     shapes_df = gpd.read_parquet(snakemake.input.shapes).set_index("shape_id")
     # import ratios
     sector_ratios = pd.read_csv(
-        snakemake.input.sector_ratios, header=[0, 1], index_col=0
+        snakemake.input.sector_rates, header=[0, 1], index_col=0
     )
     # material demand per node and industry (Mton/a)
     shape_prod_df = (
-        pd.read_csv(snakemake.input.disaggregated_future_production, index_col=0) / 1e3
+        pd.read_csv(snakemake.input.future_production, index_col=0) / 1e3
     )
     # energy demand today to get current electricity
     shape_curr_dem_df = pd.read_csv(
-        snakemake.input.disaggregated_current_energy_demand, index_col=0
+        snakemake.input.current_energy_demand, index_col=0
     )
     shape_subsec_rate_df = pd.concat(
         {
