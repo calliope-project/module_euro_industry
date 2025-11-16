@@ -161,7 +161,7 @@ rule unzip_directory:
     log:
         "logs/automatic/unzip_directory_{directory}.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/unzip.py"
 
@@ -179,6 +179,6 @@ rule unzip_GHSL:
     log:
         "logs/automatic/unzip_GHSL.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/unzip.py"

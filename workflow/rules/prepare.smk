@@ -25,7 +25,7 @@ rule prepare_shapes:
     log:
         "logs/{shape}/prepare_shapes.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_shapes.py"
 
@@ -40,7 +40,7 @@ rule prepare_ammonia_production:
     log:
         "logs/prepare/prepare_ammonia_production.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_ammonia_production.py"
 
@@ -55,7 +55,7 @@ rule prepare_coke_transformation:
     log:
         "logs/prepare/prepare_coke_transformation.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_coke_transformation.py"
 
@@ -75,7 +75,7 @@ rule prepare_current_europe_production:
     log:
         "logs/prepare/prepare_current_europe_production.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_current_europe_production.py"
 
@@ -92,7 +92,7 @@ rule prepare_future_europe_production:
     log:
         "logs/{year}/prepare_future_europe_production.log",
     conda:
-        "../envs/prepare.yaml",
+        "../envs/industry.yaml",
     script:
         "../scripts/prepare_future_europe_production.py"
 
@@ -112,7 +112,7 @@ rule prepare_current_europe_energy_demand:
     log:
         "logs/prepare/prepare_current_europe_energy_demand.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_current_europe_energy_demand.py"
 
@@ -132,7 +132,7 @@ rule prepare_sector_ratios:
     log:
         "logs/prepare/prepare_sector_ratios.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_sector_ratios.py"
 
@@ -151,6 +151,6 @@ rule prepare_future_europe_sector_rates:
     log:
          "logs/{year}/prepare_future_europe_sector_rates.log"
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/prepare_future_europe_sector_rates.py"

@@ -18,7 +18,7 @@ rule disaggregate_production_rates:
     log:
         "logs/{shape}/disaggregate_production_rates.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/disaggregate_production_rates.py"
 
@@ -35,7 +35,7 @@ rule disaggregate_current_energy_demand:
     log:
         "logs/{shape}/disaggregate_current_energy_demand.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/disaggregate_current_energy_demand.py"
 
@@ -52,7 +52,7 @@ rule disaggregate_future_production:
     log:
         "logs/{shape}/{year}/disaggregate_future_production.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/disaggregate_future_production.py"
 
@@ -70,6 +70,6 @@ rule disaggregate_future_energy_demand:
     log:
         "logs/{shape}/{year}/disaggregate_future_energy_demand.log",
     conda:
-        "../envs/prepare.yaml"
+        "../envs/industry.yaml"
     script:
         "../scripts/disaggregate_future_energy_demand.py"
