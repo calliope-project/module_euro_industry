@@ -144,9 +144,9 @@ rule prepare_future_europe_sector_rates:
     params:
         industry=config["industry"],
     input:
-        industry_sector_ratios=rules.prepare_sector_ratios.output.industry_sector_ratios,
-        industrial_energy_demand_per_country_today=rules.prepare_current_europe_energy_demand.output.energy_demand,
-        industrial_production_per_country=rules.prepare_future_europe_production.output.production,
+        sector_rates=rules.prepare_sector_ratios.output.industry_sector_ratios,
+        current_european_demand=rules.prepare_current_europe_energy_demand.output.energy_demand,
+        future_european_production=rules.prepare_future_europe_production.output.production,
     output:
         sector_rates="resources/automatic/europe/{year}/sector_rates.csv",
     log:

@@ -72,29 +72,37 @@ sys.stderr = open(snakemake.log[0], "w")
 logger = logging.getLogger(__name__)
 
 
-def build_industry_sector_ratios_intermediate():
+def prepare_future_europe_sector_rates(
+    year: int,
+    params: dict,
+    sector_rates_path: str,
+    current_demand_path: str,
+    future_production_path: str,
+    output_path: str,
+):
+    """Prepare sector rates per country for a future scenario.
+
+    Args:
+        year (int): future year to construct.
+        params (dict): module configuration parameters.
+        sector_rates_path (str): "best in class" rates.
+        current_demand_path (str): current demand per country.
+        future_production_path (str): future production per country.
+        output_path (str): where to save the resulting dataset.
+    """
     # in TWh/a
-    demand = pd.read_csv(
-        snakemake.input.industrial_energy_demand_per_country_today,
-        header=[0, 1],
-        index_col=0,
-    )
+    demand = pd.read_csv(current_demand_path, header=[0, 1], index_col=0)
 
     # in Mt/a
-    production = (
-        pd.read_csv(snakemake.input.industrial_production_per_country, index_col=0)
-        / 1e3
-    ).stack()
+    production = (pd.read_csv(future_production_path, index_col=0) / 1e3).stack()
     production.index.names = [None, None]
 
     # in MWh/t
-    future_sector_ratios = pd.read_csv(
-        snakemake.input.industry_sector_ratios, index_col=0
-    )
+    future_sector_rates = pd.read_csv(sector_rates_path, index_col=0)
 
-    today_sector_ratios = demand.div(production, axis=1).replace([np.inf, -np.inf], 0)
+    today_sector_rates = demand.div(production, axis=1).replace([np.inf, -np.inf], 0)
 
-    today_sector_ratios.dropna(how="all", axis=1, inplace=True)
+    today_sector_rates.dropna(how="all", axis=1, inplace=True)
 
     rename = {
         "waste": "biomass",
@@ -104,33 +112,36 @@ def build_industry_sector_ratios_intermediate():
         "other": "biomass",
         "liquid": "naphtha",
     }
-    today_sector_ratios = today_sector_ratios.rename(rename).groupby(level=0).sum()
+    today_sector_rates = today_sector_rates.rename(rename).groupby(level=0).sum()
 
     fraction_future = get(params["sector_ratios_fraction_future"], year)
 
-    intermediate_sector_ratios = {}
-    for ct, group in today_sector_ratios.T.groupby(level=0):
-        today_sector_ratios_ct = group.droplevel(0).T.reindex_like(future_sector_ratios)
+    future_sector_rates_ct = {}
+    for country, group in today_sector_rates.T.groupby(level=0):
+        today_sector_ratios_ct = group.droplevel(0).T.reindex_like(future_sector_rates)
         missing_mask = today_sector_ratios_ct.isna().all()
-        today_sector_ratios_ct.loc[:, missing_mask] = future_sector_ratios.loc[
+        today_sector_ratios_ct.loc[:, missing_mask] = future_sector_rates.loc[
             :, missing_mask
         ]
         today_sector_ratios_ct.loc[:, ~missing_mask] = today_sector_ratios_ct.loc[
             :, ~missing_mask
-        ].fillna(future_sector_ratios)
-        intermediate_sector_ratios[ct] = (
+        ].fillna(future_sector_rates)
+        future_sector_rates_ct[country] = (
             today_sector_ratios_ct * (1 - fraction_future)
-            + future_sector_ratios * fraction_future
+            + future_sector_rates * fraction_future
         )
 
-    intermediate_sector_ratios = pd.concat(intermediate_sector_ratios, axis=1)
+    future_sector_rates_ct = pd.concat(future_sector_rates_ct, axis="columns")
 
-    intermediate_sector_ratios.to_csv(snakemake.output.sector_rates)
+    future_sector_rates_ct.to_csv(output_path)
 
 
 if __name__ == "__main__":
-    year = int(snakemake.wildcards.year)
-
-    params = snakemake.params.industry
-
-    build_industry_sector_ratios_intermediate()
+    prepare_future_europe_sector_rates(
+        year=int(snakemake.wildcards.year),
+        params=snakemake.params.industry,
+        sector_rates_path=snakemake.input.sector_rates,
+        current_demand_path=snakemake.input.current_european_demand,
+        future_production_path=snakemake.input.future_european_production,
+        output_path=snakemake.output.sector_rates,
+    )

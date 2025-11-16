@@ -1,41 +1,6 @@
 # A minimal example of how to configure this module
 ammonia: True
 
-countries:
-- AL
-- AT
-- BA
-- BE
-- BG
-- CH
-- CZ
-- DE
-- DK
-- EE
-- ES
-- FI
-- FR
-- GB
-- GR
-- HR
-- HU
-- IE
-- IT
-- LT
-- LU
-- LV
-- ME
-- MK
-- NL
-- 'NO'
-- PL
-- PT
-- RO
-- RS
-- SE
-- SI
-- SK
-- XK
 industry:
   St_primary_fraction:
     2020: 0.6

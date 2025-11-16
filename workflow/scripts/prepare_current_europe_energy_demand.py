@@ -115,7 +115,7 @@ EU27 = cc.EU27as("ISO3").ISO3.tolist()
 JRC_NAMES = {"GR": "EL", "GB": "UK"}
 
 
-def industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammonia):
+def _get_industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammonia):
     jrc_country = JRC_NAMES.get(country, country)
     fn = f"{jrc_dir}/{jrc_country}/JRC-IDEES-2021_EnergyBalance_{jrc_country}.xlsx"
 
@@ -150,7 +150,7 @@ def industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammo
     return df
 
 
-def separate_basic_chemicals(demand, production, params: dict):
+def _separate_basic_chemicals(demand, production, params: dict):
     chlorine = pd.DataFrame(
         {
             "hydrogen": production["Chlorine"] * params["MWh_H2_per_tCl"],
@@ -195,7 +195,7 @@ def separate_basic_chemicals(demand, production, params: dict):
     return demand
 
 
-def add_non_eu27_industrial_energy_demand(countries, demand, production):
+def _add_non_eu27_industrial_energy_demand(countries, demand, production):
     non_eu27 = countries.difference(EU27)
     if non_eu27.empty:
         return demand
@@ -211,11 +211,11 @@ def add_non_eu27_industrial_energy_demand(countries, demand, production):
     return pd.concat([demand, demand_non_eu27])
 
 
-def industrial_energy_demand(countries, year):
+def _industrial_energy_demand(countries, year):
     demand_l = []
     for country in countries:
         demand_l.append(
-            industrial_energy_demand_per_country(
+            _get_industrial_energy_demand_per_country(
                 coco.convert(country, src="iso3", to="iso2"),
                 year=year,
                 jrc_dir=snakemake.input.jrc,
@@ -267,14 +267,14 @@ def add_coke_ovens(demand, fn, year, factor=0.75):
     return demand
 
 
-def main():
-    """Calculate final energy demand process."""
+def prepare_current_europe_energy_demand():
+    """Calculate energy demand per subsector and country."""
     params = snakemake.params.industry
-    year = params.get("reference_year", 2019)
+    year = params["reference_year"]
 
     countries = pd.Index(_schemas.PYPSA_EUR_COUNTRIES)
 
-    demand = industrial_energy_demand(countries.intersection(EU27), year)
+    demand = _industrial_energy_demand(countries.intersection(EU27), year)
 
     # output in MtMaterial/a
     production = (
@@ -282,8 +282,8 @@ def main():
         / 1e3
     )
 
-    demand = separate_basic_chemicals(demand, production, params)
-    demand = add_non_eu27_industrial_energy_demand(countries, demand, production)
+    demand = _separate_basic_chemicals(demand, production, params)
+    demand = _add_non_eu27_industrial_energy_demand(countries, demand, production)
 
     # for format compatibility
     demand = demand.stack(future_stack=True).unstack(level=[0, 2])
@@ -299,4 +299,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    prepare_current_europe_energy_demand()
