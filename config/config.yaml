@@ -39,32 +39,32 @@ countries:
 - SK
 - XK
 industry:
-  St_primary_fraction:
-    2020: 0.6
-    2025: 0.55
-    2030: 0.5
-    2035: 0.45
-    2040: 0.4
-    2045: 0.35
-    2050: 0.3
-  DRI_fraction:
-    2020: 0
-    2025: 0
-    2030: 0.05
-    2035: 0.2
-    2040: 0.4
-    2045: 0.7
-    2050: 1
-  H2_DRI: 1.7
-  elec_DRI: 0.322
-  Al_primary_fraction:
-    2020: 0.4
-    2025: 0.375
-    2030: 0.35
-    2035: 0.325
-    2040: 0.3
-    2045: 0.25
-    2050: 0.2
+  # St_primary_fraction:
+  #   2020: 0.6
+  #   2025: 0.55
+  #   2030: 0.5
+  #   2035: 0.45
+  #   2040: 0.4
+  #   2045: 0.35
+  #   2050: 0.3
+  # DRI_fraction:
+  #   2020: 0
+  #   2025: 0
+  #   2030: 0.05
+  #   2035: 0.2
+  #   2040: 0.4
+  #   2045: 0.7
+  #   2050: 1
+  # H2_DRI: 1.7
+  # elec_DRI: 0.322
+  # Al_primary_fraction:
+  #   2020: 0.4
+  #   2025: 0.375
+  #   2030: 0.35
+  #   2035: 0.325
+  #   2040: 0.3
+  #   2045: 0.25
+    # 2050: 0.2
   MWh_NH3_per_tNH3: 5.166
   MWh_CH4_per_tNH3_SMR: 10.8
   MWh_elec_per_tNH3_SMR: 0.7
@@ -126,3 +126,459 @@ industry:
   hotmaps_locate_missing: false
   reference_year: 2019
   oil_refining_emissions: 0.013
+
+
+# retrofiting the pypsa workflow on industry demand projections
+
+sectors:
+
+# Chemical Industry
+  high_value_chemicals:
+    production_routes:
+      primary_route:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+      mechanical_recycling:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+        ratios: #MWh/tMaterial
+          elec: 0.547 
+
+
+      chemical_recycling:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+        ratios: #MWh/tMaterial
+          elec: 6.9 
+
+      methanol_to_olefins:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+        ratios: #MWh/tMaterial
+          elec: 6.9 
+          methanol: 5.528 
+
+
+
+
+  iron_and_steel:
+    # primary routes as exist in JRC-IDEES are: Integrated Steelworks, Electric Arc 
+    # for these primary routes, the sector coefficients are calcuated in the workflow. Addditional routes are provided here
+    production_routes:
+      integrated_steelworks:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+        
+
+      electric_arc:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+      H2_DRI-EAF:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: #MWh/tMaterial
+          elec: 2.06 # GJ/t
+          hydrogen: 11.4 # GJ/t
+          process emission: 0.193 #tCO2/t
+
+
+
+      NG_DRI-EAF:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: #MWh/tMaterial
+          elec: 2.06 # GJ/t
+          methane: 7.45 # GJ/t
+          coal: 0.4
+          process emission: 0.651 #tCO2/t
+
+
+      H2_NG_DRI-EAF:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: #MWh/tMaterial
+          elec: 2.06 # GJ/t
+          methane: 4.99 # GJ/t
+          coal: 0.4
+          process emission: 0.651 #tCO2/t
+
+
+  aluminium:
+    production_routes:
+      primary_production:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+      secondary_production:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+  cement:
+    production_routes:
+      primary_route:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+      CEM2-BMW:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: #MWh/tMaterial
+          elec: 0.29 # GJ/t
+          biomass: 2.77 # GJ/t
+          process emission: 0.193 #tCO2/t
+
+
+  ceramics:
+    production_routes:
+      primary_route:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+  glass:
+    production_routes:
+      primary_route:
+        shares: # % of the primary production
+          2020: 0.0
+          2025: 0.0
+          2030: 0.0
+          2035: 0.0
+          2040: 0.0
+          2045: 0.0
+          2050: 0.0
+
+        ratios: "JRC-IDEES"
+
+  food_beverages_tobacco:
+    steam_processing:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1
+
+          efficiency: 1
+
+          costs:
+            capex: 1
+
+        
+  transport_equipment:
+    steam_processing:
+      technology:
+        mid-enthalpy-heat: # option if you would like to allow the model to choose
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 0.0
+
+          efficiency: 1
+
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 0.0
+
+          efficiency: 1
+
+          costs:
+            capex: 1
+
+        elec:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 1
+
+  machinery_equipment:
+    steam_processing:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+
+
+  textiles_and_leather:
+    steam_processing:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+
+  wood_and_wood_products:
+    steam_processing:
+      technology:
+        mid-enthalpy-heat: # option if you would like to allow the model to choose
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 0.0
+
+          efficiency: 1
+
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+          costs:
+            capex: 1
+
+        elec:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 0.0
+
+          efficiency: 1
+
+          costs:
+            capex: 1
+
+  other_industrial_sectors:
+    steam_processing:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+          costs:
+            capex: 1
+
+
+  pulp_paper_printing:
+  # pulp production
+    pulping:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+          costs:
+            capex: 1
+
+  # paper production
+    paper_machine_steam_use:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+          costs:
+            capex: 1
+
+    paper_finishing_steam_use:
+      technology:
+        biomass:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.32
+
+          costs:
+            capex: 1
+
+
+  non_ferrous_metals:
+    alumina_high_enthalpy_heat:
+      technology:
+        methane:
+          shares: # % of the primary production
+            2020: 0.0
+            2025: 0.0
+            2030: 0.0
+            2035: 0.0
+            2040: 0.0
+            2045: 0.0
+            2050: 1.0
+
+          efficiency: 0.42
+
+          costs:
+            capex: 1

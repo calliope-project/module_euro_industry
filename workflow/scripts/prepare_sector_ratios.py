@@ -989,7 +989,7 @@ def pulp_paper_printing():
 
     return df
 
-
+# Done
 def food_beverages_tobacco():
     """
     Calculates the energy consumption for the food, beverages, and tobacco
@@ -1257,7 +1257,7 @@ def non_ferrous_metals():
 
     return df
 
-
+# Done
 def transport_equipment():
     sector = "Transport equipment"
     idees = load_idees_data(sector)
@@ -1307,7 +1307,7 @@ def transport_equipment():
 
     return df
 
-
+# Done
 def machinery_equipment():
     sector = "Machinery equipment"
 
@@ -1521,17 +1521,17 @@ if __name__ == "__main__":
 
     df = pd.concat(
         [
-            iron_and_steel(),
+            iron_and_steel(), #done
             chemicals_industry(),
-            nonmetalic_mineral_products(),
-            pulp_paper_printing(),
-            food_beverages_tobacco(),
-            non_ferrous_metals(),
-            transport_equipment(),
-            machinery_equipment(),
-            textiles_and_leather(),
-            wood_and_wood_products(),
-            other_industrial_sectors(),
+            nonmetalic_mineral_products(), #done
+            pulp_paper_printing(), #done
+            food_beverages_tobacco(), #done
+            non_ferrous_metals(), # done
+            transport_equipment(), #done
+            machinery_equipment(), #done
+            textiles_and_leather(), #done
+            wood_and_wood_products(), #done
+            other_industrial_sectors(), #done
         ],
         axis=1,
     )

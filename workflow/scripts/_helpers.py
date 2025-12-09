@@ -1,6 +1,40 @@
 import logging
+import pandas as pd
 
 logger = logging.getLogger(__name__)
+
+SHEET_NAMES = {
+    "Iron and steel": "ISI",
+    "Chemicals Industry": "CHI",
+    "Non-metallic mineral products": "NMM",
+    "Pulp, paper and printing": "PPA",
+    "Food, beverages and tobacco": "FBT",
+    "Non Ferrous Metals": "NFM",
+    "Transport equipment": "TRE",
+    "Machinery equipment": "MAE",
+    "Textiles and leather": "TEL",
+    "Wood and wood products": "WWP",
+    "Other industrial sectors": "OIS",
+}
+
+
+CARRIER_INDEX = [
+    "elec",
+    "coal",
+    "coke",
+    "biomass",
+    "methane",
+    "hydrogen",
+    "low-enthalpy-heat",
+    "mid-enthalpy-heat",
+    "high-enthalpy-heat",
+    "naphtha",
+    "ammonia",
+    "methanol",
+    "process emission",
+    "process emission from feedstock",
+]
+
 
 def get(item, investment_year=None):
     """Check whether item depends on investment year."""
@@ -30,3 +64,34 @@ def get(item, investment_year=None):
             return lower + (higher - lower) * (investment_year - lower_key) / (
                 higher_key - lower_key
             )
+
+
+def load_idees_data(sector,path,year,country="EU27"):
+    suffixes = {"out": "", "fec": "_fec", "ued": "_ued", "emi": "_emi"}
+    sheets = {k: SHEET_NAMES[sector] + v for k, v in suffixes.items()}
+
+    def usecols(x):
+        return isinstance(x, str) or x == year
+
+    idees = pd.read_excel(
+        f"{path}/{country}/JRC-IDEES-2021_Industry_{country}.xlsx",
+        sheet_name=list(sheets.values()),
+        index_col=0,
+        header=0,
+        usecols=usecols,
+    )
+
+    for k, v in sheets.items():
+        idees[k] = idees.pop(v).squeeze()
+        idees[k] = idees[k][year]
+
+    return idees
+
+
+def check_route_shares(info,routes,year):
+    summer = 0
+    for k,v in routes.items():
+        summer+=v["shares"][year]
+    
+    if summer != 1:
+        raise ValueError(f"The sum of the production routes for {info}, in year {year} is not equal to 1 but equal to {summer}.")
