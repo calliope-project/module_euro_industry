@@ -40,6 +40,7 @@ rule prepare_current_aggregated_production:
         eurostat_dir="resources/automatic/eurostat/",
     output:
         production_per_country="results/aggregated/current_production.csv",
+        aggregated_production_per_country = "results/aggregated/current_aggregated_production.csv"
     log:
         "logs/prepare/current_aggregated_production.log",
     conda:
@@ -50,9 +51,9 @@ rule prepare_current_aggregated_production:
 
 rule prepare_future_aggregated_production:
     params:
-        industry=config["industry"],
+        industry=config["projections"],
     input:
-        current=rules.prepare_current_aggregated_production.output.production_per_country,
+        current=rules.prepare_current_aggregated_production.output.aggregated_production_per_country,
     output:
         future="results/aggregated/future_production_{year}.csv",
     log:

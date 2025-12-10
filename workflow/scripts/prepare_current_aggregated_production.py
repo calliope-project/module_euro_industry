@@ -296,6 +296,7 @@ def main(
     eurostat_dir: str,
     ammonia_production: str,
     output_path: str,
+    aggregated_output_path: str
 ):
     year = params["reference_year"]
     demand = industry_production(countries, year, eurostat_dir, jrc_dir)
@@ -303,6 +304,19 @@ def main(
     demand.fillna(0.0, inplace=True)
 
     demand.to_csv(output_path, float_format="%.2f")
+
+    aggregate = {
+        'Electric arc': 'Iron and steel',
+        'Integrated steelworks': 'Iron and steel',
+        'Aluminium - primary production':'Aluminium',
+        'Aluminium - secondary production':'Aluminium',
+    }
+
+    demand.columns = [aggregate.get(c,c) for c in demand.columns]
+    demand = demand.T.groupby(level=0).sum().T
+
+    
+    demand.to_csv(aggregated_output_path,float_format="%.2f")
 
 
 if __name__ == "__main__":
@@ -313,4 +327,5 @@ if __name__ == "__main__":
         eurostat_dir=snakemake.input.eurostat_dir,
         ammonia_production=snakemake.input.ammonia_production,
         output_path=snakemake.output.production_per_country,
+        aggregated_output_path = snakemake.output.aggregated_production_per_country
     )

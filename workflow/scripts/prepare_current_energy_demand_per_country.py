@@ -39,7 +39,7 @@ the output file contains the energy demand in TWh/a for the following carriers
 - biomass
 - electricity
 - gas
-- heat
+- low-enthalpy-heat
 - hydrogen
 - liquid
 - other
@@ -101,8 +101,8 @@ fuels = {
     "Oil and petroleum products": "liquid",
     "Manufactured gases": "gas",
     "Natural gas": "gas",
-    "Nuclear heat": "heat",
-    "Heat": "heat",
+    "Nuclear heat": "low-enthalpy-heat",
+    "Heat": "low-enthalpy-heat",
     "Renewables and biofuels": "biomass",
     "Non-renewable waste": "waste",
     "Electricity": "electricity",

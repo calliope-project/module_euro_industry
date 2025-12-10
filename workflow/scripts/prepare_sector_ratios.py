@@ -489,7 +489,6 @@ def chemicals_industry():
     df.loc["methanol", sector] = params["MWh_MeOH_per_tMeOH"]
 
     # Other chemicals
-
     sector = "Other chemicals"
 
     df[sector] = 0.0

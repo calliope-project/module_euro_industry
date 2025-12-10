@@ -36,6 +36,7 @@ CARRIER_INDEX = [
 ]
 
 
+
 def get(item, investment_year=None):
     """Check whether item depends on investment year."""
     if not isinstance(item, dict):
@@ -95,3 +96,5 @@ def check_route_shares(info,routes,year):
     
     if summer != 1:
         raise ValueError(f"The sum of the production routes for {info}, in year {year} is not equal to 1 but equal to {summer}.")
+
+

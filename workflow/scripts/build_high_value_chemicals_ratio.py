@@ -158,29 +158,22 @@ def primary_route(idees,**kwargs):
     df.loc["methane", sector] -= methanol_total * params["MWh_CH4_per_tMeOH"] * 1e3
     df.loc["elec", sector] -= methanol_total * params["MWh_elec_per_tMeOH"] * 1e3
 
-    # MWh/t material
+
     df.loc[sources, sector] = df.loc[sources, sector] / s_out
 
-    df.rename(columns={sector: "HVC"}, inplace=True)
+    df.rename(columns={sector: "primary_route"}, inplace=True)
 
-    # HVC mechanical recycling
+    return df
 
-    sector = "HVC (mechanical recycling)"
-    df[sector] = 0.0
-    df.loc["elec", sector] = params["MWh_elec_per_tHVC_mechanical_recycling"]
-
-    # HVC chemical recycling
-
-    sector = "HVC (chemical recycling)"
-    df[sector] = 0.0
-    df.loc["elec", sector] = params["MWh_elec_per_tHVC_chemical_recycling"]
-
+def add_missing_high_value_chemicals(params):
+    df = pd.DataFrame(index=CARRIER_INDEX)
+    columns = []
     # Ammonia
-
     sector = "Ammonia"
     df[sector] = 0.0
 
     df.loc["ammonia", sector] = params["MWh_NH3_per_tNH3"]
+    columns.append((sector, "primary_route"))
 
 
     # Chlorine
@@ -188,17 +181,16 @@ def primary_route(idees,**kwargs):
     df[sector] = 0.0
     df.loc["hydrogen", sector] = params["MWh_H2_per_tCl"]
     df.loc["elec", sector] = params["MWh_elec_per_tCl"]
+    columns.append((sector, "primary_route"))
 
     # Methanol
 
     sector = "Methanol"
     df[sector] = 0.0
     df.loc["methanol", sector] = params["MWh_MeOH_per_tMeOH"]
+    columns.append((sector, "primary_route"))
 
-
-    df.loc[sources, sector] = df.loc[sources, sector] / s_out
-
-    df.rename(columns={sector: "HVC"}, inplace=True)
+    df.columns = pd.MultiIndex.from_tuples(columns)
 
     return df
 
@@ -231,7 +223,9 @@ def high_value_chemicals(config,idees,output_file,params,reference_year):
 
 
     df = pd.concat(ratios,axis=1).fillna(0)
-    df.columns = pd.MultiIndex.from_product([["High Value Chemicals"],df.columns])
+    df.columns = pd.MultiIndex.from_product([["HVC"],df.columns])
+    missing = add_missing_high_value_chemicals(params)
+    df = pd.concat([df,missing],axis=1)
     df.to_csv(output_file)
 
 

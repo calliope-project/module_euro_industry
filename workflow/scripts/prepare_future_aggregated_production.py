@@ -32,73 +32,89 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
-from _helpers import get
+from _helpers import get,check_route_shares
 
 if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w")
 
 
-def main(params: dict, year: int, input_file: str, output_file: str) -> None:
-    """Build future industrial production per country."""
-    production = pd.read_csv(input_file, index_col=0)
+SECTOR_ALLIAS = {
+    "HVC": "high_value_chemicals",
+    "Iron and steel": "iron_and_steel",
+    "Aluminium": "aluminium",
+    "Cement": "cement",
+    "Ceramics & other NMM": "ceramics",
+    "Glass production": "glass",
+    "Food, beverages and tobacco": "food_beverages_tobacco",
+    "Transport equipment": "transport_equipment",
+    "Machinery equipment": "machinery_equipment",
+    "Textiles and leather": "textiles_and_leather",
+    "Wood and wood products": "wood_and_wood_products",
+    "Other industrial sectors": "other_industrial_sectors",
+    "Pulp production": "pulp_production",
+    "Paper production": "paper_production",
+    "Printing and media reproduction": "printing_and_media_reproduction",
+    "Pharmaceutical products etc.": "pharmaceutical_products",
+    "Alumina production": "alumina_production",
+    "Chlorine":"chlorine",
+    "Ammonia": "ammonia" ,
+    "Methanol":"methanol",
+    "Other chemicals": "other_chemicals",
+    "Other non-ferrous metals": "other_non_ferrous_metals"
+}
 
-    keys = ["Integrated steelworks", "Electric arc"]
-    total_steel = production[keys].sum(axis=1)
 
-    st_primary_fraction = get(params["St_primary_fraction"], year)
-    dri_fraction = get(params["DRI_fraction"], year)
-    int_steel = production["Integrated steelworks"].sum()
-    fraction_persistent_primary = st_primary_fraction * total_steel.sum() / int_steel
+def main(params: dict, year: int, aggregated_production, output_file: str):
+    
+    projections = params[year]
+    production = pd.read_csv(aggregated_production, index_col=0)
+    future_production = []
 
-    dri = (
-        dri_fraction * fraction_persistent_primary * production["Integrated steelworks"]
-    )
-    production.insert(2, "DRI + Electric arc", dri)
+    default = projections["default"]
+    production_level = projections["production_level"]
 
-    not_dri = 1 - dri_fraction
-    production["Integrated steelworks"] = (
-        not_dri * fraction_persistent_primary * production["Integrated steelworks"]
-    )
-    production["Electric arc"] = (
-        total_steel
-        - production["DRI + Electric arc"]
-        - production["Integrated steelworks"]
-    )
+    if isinstance(production_level, str):
+        production_level = pd.read_csv(production_level, index_col=0)
+    else:
+        production_level = pd.DataFrame.from_dict(production_level, orient="index")
 
-    keys = ["Aluminium - primary production", "Aluminium - secondary production"]
-    total_aluminium = production[keys].sum(axis=1)
 
-    key_pri = "Aluminium - primary production"
-    key_sec = "Aluminium - secondary production"
+    # check if all countries are in production level
+    missing_countries = production.index.difference(production_level.index)
+    if missing_countries.any():
+        production_level.loc[missing_countries] = default
 
-    al_primary_fraction = get(params["Al_primary_fraction"], year)
-    fraction_persistent_primary = (
-        al_primary_fraction * total_aluminium.sum() / (production[key_pri].sum() or 1)
-    )
+    # check if all industries are in production level
+    missing_industries = production.columns.difference(production_level.columns)
+    if missing_industries.any():
+        production_level[missing_industries] = default
 
-    production[key_pri] = fraction_persistent_primary * production[key_pri]
-    production[key_sec] = total_aluminium - production[key_pri]
 
-    production["HVC (mechanical recycling)"] = (
-        get(params["HVC_mechanical_recycling_fraction"], year)
-        * production["HVC"]
-    )
-    production["HVC (chemical recycling)"] = (
-        get(params["HVC_chemical_recycling_fraction"], year)
-        * production["HVC"]
-    )
+    shares = projections["shares"]
 
-    production["HVC"] *= get(params["HVC_primary_fraction"], year)
+    for sector in production.columns:
 
-    production.to_csv(output_file, float_format="%.2f")
+        if sum(shares[SECTOR_ALLIAS[sector]].values()) != 1:
+            raise ValueError(f"The sum of the production routes for {sector}, is not equal to 1.")
 
+        sector_ratio = production_level[sector]
+        sector_production = production[sector]
+
+        for k,v in shares[SECTOR_ALLIAS[sector]].items():
+            if v!=0:
+                fd = (sector_production*sector_ratio*v).to_frame()
+                fd.columns = pd.MultiIndex.from_tuples([(sector,k)])
+                future_production.append(fd)
+
+    future_production = pd.concat(future_production, axis=1)
+    future_production.to_csv(output_file, float_format="%.2f")
 
 if __name__ == "__main__":
 
     main(
         params=snakemake.params.industry,
         year=int(snakemake.wildcards.year),
-        input_file=snakemake.input.current,
+        aggregated_production=snakemake.input.current,
         output_file=snakemake.output.future
     )
