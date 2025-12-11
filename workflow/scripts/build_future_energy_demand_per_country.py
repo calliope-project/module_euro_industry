@@ -1,5 +1,5 @@
 import pandas as pd
-
+import csv
 
 
 def build_future_energy_demand(
@@ -24,9 +24,17 @@ def build_future_energy_demand(
         demand_df.columns = pd.MultiIndex.from_tuples([route],names=["sector","route"])
         demand.append(demand_df)
 
-    demand_df = pd.concat(demand,axis=1)
-    demand_df.index.names = ["carrier","country"]  
-    demand_df.unstack(level=[0,1]).to_frame("TWh/a (MtCO2/a)").to_csv(output_path)
+    energy = pd.concat(demand,axis=1)
+    energy.index.names = ["carrier","country"]  
+    energy = energy.unstack(level=[0,1]).to_frame("value")
+    energy["unit"] = "TWh/a"
+    energy.loc[
+        energy.index.get_level_values("carrier").str.contains("emission"),"unit"
+    ] = "MtCO2/a"
+
+    
+    
+    energy.to_csv(output_path)
 
 
 if __name__ == "__main__":
