@@ -56,7 +56,7 @@ def primary_production(idees):
         df.loc[sources, sector] * TOE_TO_MWH / s_out["Aluminium - primary production"]
     )
 
-    df.rename(columns={sector: "primary_production"}, inplace=True)
+    df.rename(columns={sector: "Aluminium - primary production"}, inplace=True)
 
     return df
 
@@ -105,7 +105,7 @@ def secondary_production(idees):
         df.loc[sources, sector] * TOE_TO_MWH / s_out["Aluminium - secondary production"]
     )
 
-    df.rename(columns={sector: "secondary_production"}, inplace=True)
+    df.rename(columns={sector: "Aluminium - secondary production"}, inplace=True)
 
     return df
 
@@ -113,8 +113,8 @@ def secondary_production(idees):
 def aluminium(config,idees,output_file):
     
     primary_routes = {
-        "primary_production": primary_production,
-        "secondary_production": secondary_production,
+        "Aluminium - primary production": primary_production,
+        "Aluminium - secondary production": secondary_production,
     }
 
     ratios = []

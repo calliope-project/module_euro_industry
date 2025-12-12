@@ -1,14 +1,3 @@
-rule build_base_route_ratios:
-    message: "building the energy ration by sector for today"
-    input:
-        current_aggregated_production= rules.prepare_current_aggregated_production.output.aggregated_production_per_country,
-        current_energy_demand= rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
-    output:
-        file = "resources/automatic/build/base_route_ratio.csv"
-    log:
-        "logs/build/build_base_route_ratios.log",
-    script:
-        "../scripts/build_base_route_ratios.py"
 
 rule build_food_beverages_tobacco_ratios:
     message: "building the food,beverages, and tobacco sector ratio for {wildcards.year}"
@@ -251,7 +240,7 @@ rule build_pharmaceutical_products_ratio:
 rule build_sector_ratio:
     message: "building the sectors ratio for {wildcards.year}"
     input:
-        base_route = rules.build_base_route_ratios.output.file,
+        production = rules.prepare_current_aggregated_production.output.production_per_country,
         alternative_routes = lambda wc: expand(
             "resources/automatic/build/{sector}_ratio_{year}.csv",
             sector = [
@@ -281,12 +270,25 @@ rule build_sector_ratio:
     script:
         "../scripts/build_sector_ratios.py"
 
+rule build_base_route_ratios:
+    message: "building the energy ration by sector for today based on future ratio {wildcards.year}"
+    input:
+        current_aggregated_production= rules.prepare_current_aggregated_production.output.production_per_country,
+        current_energy_demand= rules.prepare_current_energy_demand_per_country.output.current_energy_demand,
+        future_ratio = rules.build_sector_ratio.output.file,
+    output:
+        file = "resources/automatic/build/base_route_ratio_{year}.csv"
+    log:
+        "logs/build/build_base_route_ratios_{year}.log",
+    script:
+        "../scripts/build_base_route_ratios.py"
 
 rule future_energy_demand_per_country:
     message: "building the sectoral energy demand per country for {wildcards.year}"
     input:
-        sector_ratio = rules.build_sector_ratio.output.file,
+        future_ratio = rules.build_sector_ratio.output.file,
         production = rules.prepare_future_aggregated_production.output.future,
+        base_ratio = rules.build_base_route_ratios.output.file,
     output:
         file = "results/aggregated/sectoral_energy_demand_per_country_{year}.csv"
     log:

@@ -95,7 +95,7 @@ def electric_arc(idees):
     sel = CARRIER_INDEX
     df.loc[sel, sector] = df.loc[sel, sector] * TOE_TO_MWH / s_out[sector]
 
-    df.rename(columns={sector: "electric_arc"}, inplace=True)
+    df.rename(columns={sector: "Electric arc"}, inplace=True)
 
     return df
 
@@ -182,7 +182,7 @@ def integrated_steelworks(idees):
     df.loc[sel, sector] = df.loc[sel, sector] * TOE_TO_MWH / s_out[sector]
 
 
-    df.rename(columns={sector: "integrated_steelworks"}, inplace=True)
+    df.rename(columns={sector: "Integrated steelworks"}, inplace=True)
 
     return df
 
@@ -191,8 +191,8 @@ def integrated_steelworks(idees):
 def iron_and_steel(config,idees,output_file):
     
     primary_routes = {
-        "integrated_steelworks": integrated_steelworks,
-        "electric_arc": electric_arc,
+        "Integrated steelworks": integrated_steelworks,
+        "Electric arc": electric_arc,
     }
 
     ratios = []
