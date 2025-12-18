@@ -1,3 +1,7 @@
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
 """Build future industrial production per country.
 
 Description
@@ -81,12 +85,10 @@ def main(params: dict, year: int, input_file: str, output_file: str) -> None:
     production[key_sec] = total_aluminium - production[key_pri]
 
     production["HVC (mechanical recycling)"] = (
-        get(params["HVC_mechanical_recycling_fraction"], year)
-        * production["HVC"]
+        get(params["HVC_mechanical_recycling_fraction"], year) * production["HVC"]
     )
     production["HVC (chemical recycling)"] = (
-        get(params["HVC_chemical_recycling_fraction"], year)
-        * production["HVC"]
+        get(params["HVC_chemical_recycling_fraction"], year) * production["HVC"]
     )
 
     production["HVC"] *= get(params["HVC_primary_fraction"], year)
@@ -95,10 +97,9 @@ def main(params: dict, year: int, input_file: str, output_file: str) -> None:
 
 
 if __name__ == "__main__":
-
     main(
         params=snakemake.params.industry,
         year=int(snakemake.wildcards.year),
         input_file=snakemake.input.current,
-        output_file=snakemake.output.future
+        output_file=snakemake.output.production,
     )

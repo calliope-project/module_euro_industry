@@ -1,6 +1,7 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-#
-# SPDX-License-Identifier: MIT
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
 """Build best case specific energy consumption by carrier and category.
 
 Description
@@ -102,8 +103,7 @@ def load_idees_data(sector, country="EU27"):
 
 
 def iron_and_steel():
-    """
-    This function calculates the energy consumption and emissions for different
+    """This function calculates the energy consumption and emissions for different
     approaches to producing iron and steel. The two primary approaches are
     integrated steelworks and electric arc furnaces (EAF). The function assumes
     that integrated steelworks will be replaced entirely by electric arc
@@ -116,7 +116,6 @@ def iron_and_steel():
                       production approaches, including electric arc, DRI + electric arc,
                       and integrated steelworks.
     """
-
     sector = "Iron and steel"
     idees = load_idees_data(sector)
 
@@ -296,8 +295,7 @@ def iron_and_steel():
 
 
 def chemicals_industry():
-    """
-    This function calculates the energy consumption and emissions for the
+    """This function calculates the energy consumption and emissions for the
     chemicals industry, focusing on various subsectors such as basic chemicals,
     steam processing, furnaces, and process cooling. The function also accounts
     for specific processes in ammonia, chlorine, methanol production, and other
@@ -342,14 +340,7 @@ def chemicals_industry():
 
     # LPG and other feedstock materials are assimilated to naphtha
     # since they will be produced through Fischer-Tropsch process
-    sel = [
-        "Solids",
-        "Refinery gas",
-        "LPG",
-        "Diesel oil",
-        "Fuel oil",
-        "Other liquids",
-    ]
+    sel = ["Solids", "Refinery gas", "LPG", "Diesel oil", "Fuel oil", "Other liquids"]
     df.loc["naphtha", sector] += s_fec[sel].sum()
 
     subsector = "Chemicals: Steam processing"
@@ -635,8 +626,7 @@ def chemicals_industry():
 
 
 def nonmetalic_mineral_products():
-    """
-    This function calculates the energy consumption and emissions for the non-
+    """This function calculates the energy consumption and emissions for the non-
     metallic mineral products industry, focusing on three main sectors: cement,
     ceramics, and glass production. It takes into account the specific
     processes and their associated energy types and emissions.
@@ -646,7 +636,6 @@ def nonmetalic_mineral_products():
                       and process emissions (in tCO2/t material) for the cement, ceramics,
                       and glass production sectors.
     """
-
     sector = "Non-metallic mineral products"
     idees = load_idees_data(sector)
 
@@ -832,8 +821,7 @@ def nonmetalic_mineral_products():
 
 
 def pulp_paper_printing():
-    """
-    Models the energy consumption for the pulp, paper, and printing sector,
+    """Models the energy consumption for the pulp, paper, and printing sector,
     assuming complete electrification of all processes. This sector does not
     have any process emissions associated with it.
 
@@ -841,7 +829,6 @@ def pulp_paper_printing():
         pd.DataFrame: A DataFrame containing the energy consumption (in MWh/t material)
                       for the pulp, paper, and printing sector.
     """
-
     sector = "Pulp, paper and printing"
     idees = load_idees_data(sector)
 
@@ -991,8 +978,7 @@ def pulp_paper_printing():
 
 
 def food_beverages_tobacco():
-    """
-    Calculates the energy consumption for the food, beverages, and tobacco
+    """Calculates the energy consumption for the food, beverages, and tobacco
     sector, assuming complete electrification of all processes. This sector
     does not have any process emissions associated with it.
 
@@ -1000,7 +986,6 @@ def food_beverages_tobacco():
         pd.DataFrame: A DataFrame containing the energy consumption (in MWh/t material)
                       for the food, beverages, and tobacco sector.
     """
-
     sector = "Food, beverages and tobacco"
     idees = load_idees_data(sector)
 
@@ -1514,7 +1499,6 @@ def other_industrial_sectors():
 
 
 if __name__ == "__main__":
-
     params = snakemake.params.industry
 
     year = params["reference_year"]

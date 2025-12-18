@@ -1,12 +1,15 @@
-"""Functions to prepare coke oven data.
-
-Based on PyPSA-Eur code.
-"""
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
+"""Functions to prepare coke oven data."""
 
 import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
+import _schemas
+import country_converter as coco
 import numpy as np
 import pandas as pd
 
@@ -28,12 +31,12 @@ def eurostat_per_country(input_eurostat: str, country: str) -> pd.DataFrame:
     country : str
         Country code for the specific country.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame
         Concatenated energy balance data for the specified country.
 
-    Notes
+    Notes:
     -----
     - The function reads `<input_eurostat>/<country>.-Energy-balance-sheets-April-2023-edition.xlsb`
     - It removes the "Cover" sheet from the data and concatenates all the remaining sheets into a single DataFrame.
@@ -53,43 +56,39 @@ def eurostat_per_country(input_eurostat: str, country: str) -> pd.DataFrame:
     return pd.concat(sheet)
 
 
-def build_eurostat(input_eurostat: str, countries: list[str]) -> pd.DataFrame:
+def build_eurostat(input_eurostat: str) -> pd.DataFrame:
     """Return multi-index for all countries' energy data in TWh/a.
 
     Parameters
     ----------
     input_eurostat : str
         Path to the Eurostat database.
-    countries : list[str]
-        List of countries for which energy data is to be retrieved.
-    nprocesses : int, optional
-        Number of processes to use for parallel execution, by default 1.
-    disable_progressbar : bool, optional
-        Whether to disable the progress bar, by default False.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame
         Multi-index DataFrame containing energy data for all countries in TWh/a.
 
-    Notes
+    Notes:
     -----
     - The function first renames the countries in the input list using the `idees_rename` mapping and removes "CH".
     - It then reads country-wise data using :func:`eurostat_per_country` into a single DataFrame.
     - The data is reordered, converted to TWh/a, and missing values are filled.
     """
-    countries_no_che = {IDEES_RENAME.get(country, country) for country in countries} - {
-        "CH"
-    }
+    countries = _schemas.PYPSA_EUR_COUNTRIES
+    countries_a2 = coco.convert(names=countries, src="ISO3", to="ISO2")
+    countries_a2_no_che = {
+        IDEES_RENAME.get(country, country) for country in countries_a2
+    } - {"CH"}
     func = partial(eurostat_per_country, input_eurostat)
 
     # Regular for-loop instead of multiprocessing + tqdm
     dfs = []
-    for country in countries_no_che:
+    for country in countries_a2_no_che:
         dfs.append(func(country))
 
-    index_names = ["country", "year", "lvl1", "lvl2", "lvl3", "lvl4"]
-    df = pd.concat(dfs, keys=countries_no_che, names=index_names)
+    index_names = ["country_id", "year", "lvl1", "lvl2", "lvl3", "lvl4"]
+    df = pd.concat(dfs, keys=countries_a2_no_che, names=index_names)
     df.index = df.index.set_levels(df.index.levels[1].astype(int), level=1)
 
     # drop columns with all NaNs
@@ -111,7 +110,7 @@ def build_eurostat(input_eurostat: str, countries: list[str]) -> pd.DataFrame:
     df = pd.concat([temp, df.loc[~int_avia]]).sort_index()
 
     # Fill in missing data on "Domestic aviation" for each country.
-    for country in countries_no_che:
+    for country in countries_a2_no_che:
         slicer = IDX[country, :, :, :, "Domestic aviation"]
         # For the Total and Fossil energy columns, fill in zeros with
         # the closest non-zero value in the year index.
@@ -155,18 +154,20 @@ def build_transformation_output_coke(eurostat: pd.DataFrame, output_path: str) -
     """
     slicer = pd.IndexSlice[:, :, :, "Coke ovens", "Other sources", :]
     df = eurostat.loc[slicer, :].droplevel(level=[2, 3, 4, 5])
-    df.to_csv(output_path)
+    df = df.reset_index()
+    df["country_id"] = coco.convert(names=df["country_id"], src="ISO2", to="ISO3")
+
+    df.to_csv(output_path, index=False)
 
 
-def main(eurostat_dir: str, countries: list[str], output_coke_path: str):
+def main(eurostat_dir: str, output_coke_path: str):
     """Main processing."""
-    eurostat_df = build_eurostat(eurostat_dir, countries)
+    eurostat_df = build_eurostat(eurostat_dir)
     build_transformation_output_coke(eurostat_df, output_coke_path)
 
 
 if __name__ == "__main__":
     main(
         eurostat_dir=snakemake.input.eurostat_dir,
-        countries=snakemake.params.countries,
         output_coke_path=snakemake.output.coke,
     )

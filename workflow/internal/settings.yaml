@@ -1,4 +1,9 @@
 # Module settings that users cannot modify.
+crs:
+  geographic: "EPSG:4326"
+population:
+  epoch: 2020
+  resolution: 1000
 resources:
   automatic:
     # Links for automatically downloaded files
@@ -9,6 +14,7 @@ resources:
       plants: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/ammonia_plants.csv"
       usgs: "https://d9-wret.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/media/files/myb1-2022-nitro-ert.xlsx"
     GEM_SPT: "https://tubcloud.tu-berlin.de/s/Aqebo3rrQZWKGsG/download/Global-Steel-Plant-Tracker-April-2024-Standard-Copy-V1.xlsx"
+    GHSL: "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023A/GHS_POP_E{epoch}_GLOBE_R2023A_54009_{resolution}/V1-0/GHS_POP_E{epoch}_GLOBE_R2023A_54009_{resolution}_V1_0.zip"
     CHE_industry: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/ch_industrial_production_per_subsector.csv"
     non_eu:
       cement: "https://raw.githubusercontent.com/PyPSA/pypsa-eur/refs/heads/master/data/cement-plants-noneu.csv"

@@ -1,3 +1,7 @@
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
 """Build historical annual ammonia production per country in ktonNH3/a.
 
 Description
@@ -21,7 +25,7 @@ sys.stderr = open(snakemake.log[0], "w", buffering=1)
 cc = coco.CountryConverter()
 
 
-def main(input_path: str, output_path: str)-> None:
+def main(input_path: str, output_path: str) -> None:
     """Extracts the annual ammonia production per country in ktonN/a.
 
     The data is converted to ktonNH3/a.
@@ -36,7 +40,7 @@ def main(input_path: str, output_path: str)-> None:
         na_values=["--"],
     )
 
-    ammonia.index = cc.convert(ammonia.index, to="iso2")
+    ammonia.index = cc.convert(ammonia.index, to="ISO3")
 
     years = [str(i) for i in range(2018, 2023)]
 
@@ -51,7 +55,4 @@ def main(input_path: str, output_path: str)-> None:
 
 
 if __name__ == "__main__":
-    main(
-        input_path=snakemake.input.usgs,
-        output_path=snakemake.output.prepared,
-    )
+    main(input_path=snakemake.input.usgs, output_path=snakemake.output.production)

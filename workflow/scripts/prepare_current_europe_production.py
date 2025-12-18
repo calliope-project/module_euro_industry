@@ -1,3 +1,7 @@
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
 """This rule builds the historical industrial production per country.
 
 Description
@@ -44,10 +48,12 @@ The following subcategories [kton/a] are considered:
 - Chlorine
 - Methanol
 """
+
 import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
+import _schemas
 import country_converter as coco
 import numpy as np
 import pandas as pd
@@ -166,14 +172,14 @@ CH_MAPPING = {
 }
 
 
-def find_physical_output(df):
+def _find_physical_output(df):
     start = np.where(df.index.str.contains("Physical output", na=""))[0][0]
     empty_row = np.where(df.index.isnull())[0]
     end = empty_row[np.argmax(empty_row > start)]
     return slice(start, end)
 
 
-def get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake):
+def _get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake):
     if country == "CH":
         # data ranges between 2014-2023
         e_country = pd.read_csv(
@@ -194,7 +200,7 @@ def get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake):
     fn = f"{jrc_dir}/EU27/JRC-IDEES-2021_Industry_EU27.xlsx"
 
     df = pd.read_excel(fn, sheet_name="Ind_Summary", index_col=0, header=0).squeeze(
-            "columns"
+        "columns"
     )
 
     assert df.index[49] == "by sector"
@@ -207,17 +213,17 @@ def get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake):
     return pd.Series({k: e_ratio[v] for k, v in SUB2SECT.items()})
 
 
-def industry_production_per_country(country, year, eurostat_dir, jrc_dir, snakemake):
+def _industry_production_per_country(country, year, eurostat_dir, jrc_dir, snakemake):
     def get_sector_data(sector, country):
         jrc_country = JRC_NAMES.get(country, country)
         fn = f"{jrc_dir}/{jrc_country}/JRC-IDEES-2021_Industry_{jrc_country}.xlsx"
         sheet = SUB_SHEET_NAME_DICT[sector]
         df = pd.read_excel(fn, sheet_name=sheet, index_col=0, header=0).squeeze(
-                "columns"
+            "columns"
         )
 
         year_i = df.columns.get_loc(year)
-        df = df.iloc[find_physical_output(df), year_i]
+        df = df.iloc[_find_physical_output(df), year_i]
 
         df = df.loc[map(FIELDS.get, SECT2SUB[sector])]
         df.index = SECT2SUB[sector]
@@ -228,25 +234,26 @@ def industry_production_per_country(country, year, eurostat_dir, jrc_dir, snakem
     demand = pd.concat([get_sector_data(s, ct) for s in SECT2SUB])
 
     if country not in EU27:
-        demand *= get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake)
+        demand *= _get_energy_ratio(country, eurostat_dir, jrc_dir, year, snakemake)
 
     demand.name = country
 
     return demand
 
 
-def industry_production(countries, year, eurostat_dir, jrc_dir):
+def _industry_production(year, eurostat_dir, jrc_dir):
     func = partial(
-        industry_production_per_country,
+        _industry_production_per_country,
         year=year,
         eurostat_dir=eurostat_dir,
         jrc_dir=jrc_dir,
         snakemake=snakemake,
     )
+    countries_a2 = coco.convert(_schemas.PYPSA_EUR_COUNTRIES, src="iso3", to="iso2")
+    demand_l = [func(c) for c in countries_a2]
 
-    demand_l = [func(c) for c in countries]
-
-    demand = pd.concat(demand_l, axis=1).T
+    demand = pd.concat(demand_l, axis="columns").T
+    demand.index = coco.convert(demand.index, src="iso2", to="iso3")
     demand.index.name = "kton/a"
     return demand
 
@@ -289,16 +296,16 @@ def separate_basic_chemicals(ammonia_path, demand, year, params):
     demand.drop(columns=["Basic chemicals"], inplace=True)
 
 
-def main(
-    countries: list[str],
+def prepare_current_europe_production(
     params: dict,
     jrc_dir: str,
     eurostat_dir: str,
     ammonia_production: str,
     output_path: str,
 ):
+    """Builds the industrial production per country for the reference year."""
     year = params["reference_year"]
-    demand = industry_production(countries, year, eurostat_dir, jrc_dir)
+    demand = _industry_production(year, eurostat_dir, jrc_dir)
     separate_basic_chemicals(ammonia_production, demand, year, params)
     demand.fillna(0.0, inplace=True)
 
@@ -306,11 +313,10 @@ def main(
 
 
 if __name__ == "__main__":
-    main(
-        countries=snakemake.params.countries,
+    prepare_current_europe_production(
         params=snakemake.params.industry,
         jrc_dir=snakemake.input.jrc_dir,
         eurostat_dir=snakemake.input.eurostat_dir,
         ammonia_production=snakemake.input.ammonia_production,
-        output_path=snakemake.output.production_per_country,
+        output_path=snakemake.output.production,
     )

@@ -1,6 +1,7 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-#
-# SPDX-License-Identifier: MIT
+# Adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
+# Copyright (c) 2017-2024 The PyPSA-Eur Authors
+# Licensed under the MIT License
+# Commit: 822a92729e6973aa3aff741d6c94f1da2c75e8b2
 """Build industrial energy demand per country.
 
 Description
@@ -51,6 +52,7 @@ import logging
 import sys
 from typing import TYPE_CHECKING, Any
 
+import _schemas
 import country_converter as coco
 import pandas as pd
 
@@ -58,11 +60,11 @@ if TYPE_CHECKING:
     snakemake: Any
 sys.stderr = open(snakemake.log[0], "w", buffering=1)
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 cc = coco.CountryConverter()
 
-ktoe_to_twh = 0.011630
+KTOE_TO_TWH = 0.011630
 
 # name in JRC-IDEES Energy Balances
 sector_sheets = {
@@ -108,13 +110,15 @@ fuels = {
     "Electricity": "electricity",
 }
 
-eu27 = cc.EU27as("ISO2").ISO2.tolist()
+EU27 = cc.EU27as("ISO3").ISO3.tolist()
 
-jrc_names = {"GR": "EL", "GB": "UK"}
+JRC_NAMES = {"GR": "EL", "GB": "UK"}
 
 
-def industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammonia):
-    jrc_country = jrc_names.get(country, country)
+def _get_industrial_energy_demand_per_country(
+    country, year, jrc_dir, endogenous_ammonia
+):
+    jrc_country = JRC_NAMES.get(country, country)
     fn = f"{jrc_dir}/{jrc_country}/JRC-IDEES-2021_EnergyBalance_{jrc_country}.xlsx"
 
     sheets = list(sector_sheets.values())
@@ -143,12 +147,12 @@ def industrial_energy_demand_per_country(country, year, jrc_dir, endogenous_ammo
 
     df.drop(columns=sel + ["Basic chemicals feedstock"], index="all", inplace=True)
 
-    df *= ktoe_to_twh
+    df *= KTOE_TO_TWH
 
     return df
 
 
-def separate_basic_chemicals(demand, production):
+def _separate_basic_chemicals(demand, production, params: dict):
     chlorine = pd.DataFrame(
         {
             "hydrogen": production["Chlorine"] * params["MWh_H2_per_tCl"],
@@ -193,12 +197,12 @@ def separate_basic_chemicals(demand, production):
     return demand
 
 
-def add_non_eu27_industrial_energy_demand(countries, demand, production):
-    non_eu27 = countries.difference(eu27)
+def _add_non_eu27_industrial_energy_demand(countries, demand, production):
+    non_eu27 = countries.difference(EU27)
     if non_eu27.empty:
         return demand
 
-    eu27_production = production.loc[countries.intersection(eu27)].sum()
+    eu27_production = production.loc[countries.intersection(EU27)].sum()
     eu27_energy = demand.groupby(level=1).sum()
     eu27_averages = eu27_energy / eu27_production
 
@@ -209,25 +213,23 @@ def add_non_eu27_industrial_energy_demand(countries, demand, production):
     return pd.concat([demand, demand_non_eu27])
 
 
-def industrial_energy_demand(countries, year):
+def _industrial_energy_demand(countries, year):
     demand_l = []
     for country in countries:
         demand_l.append(
-            industrial_energy_demand_per_country(
-                country,
+            _get_industrial_energy_demand_per_country(
+                coco.convert(country, src="iso3", to="iso2"),
                 year=year,
                 jrc_dir=snakemake.input.jrc,
                 endogenous_ammonia=snakemake.params.ammonia,
             )
         )
-
-    return pd.concat(demand_l, keys=countries)
+    demand_df = pd.concat(demand_l, keys=countries)
+    return demand_df
 
 
 def add_coke_ovens(demand, fn, year, factor=0.75):
-    """
-    Adds the energy consumption of coke ovens to the energy demand for
-    integrated steelworks.
+    """Adds the energy consumption of coke ovens to the energy demand for integrated steelworks.
 
     This function reads the energy consumption data for coke ovens from a
     CSV file, processes it to match the structure of the `demand` DataFrame,
@@ -249,12 +251,11 @@ def add_coke_ovens(demand, fn, year, factor=0.75):
     factor (float, optional): The proportion of coke ovens energy consumption to add to the
                               integrated steelworks demand. Defaults to 0.75.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame: The updated `demand` DataFrame with the coke ovens energy
     consumption added to the integrated steelworks energy demand.
     """
-
     df = pd.read_csv(fn, index_col=[0, 1]).xs(year, level=1)
     df = df.rename(columns={"Total all products": "Total"})[fuels.keys()]
     df = df.rename(columns=fuels).T.groupby(level=0).sum().T
@@ -268,12 +269,14 @@ def add_coke_ovens(demand, fn, year, factor=0.75):
     return demand
 
 
-if __name__ == "__main__":
+def prepare_current_europe_energy_demand():
+    """Calculate energy demand per subsector and country."""
     params = snakemake.params.industry
-    year = params.get("reference_year", 2019)
-    countries = pd.Index(snakemake.params.countries)
+    year = params["reference_year"]
 
-    demand = industrial_energy_demand(countries.intersection(eu27), year)
+    countries = pd.Index(_schemas.PYPSA_EUR_COUNTRIES)
+
+    demand = _industrial_energy_demand(countries.intersection(EU27), year)
 
     # output in MtMaterial/a
     production = (
@@ -281,9 +284,8 @@ if __name__ == "__main__":
         / 1e3
     )
 
-    demand = separate_basic_chemicals(demand, production)
-
-    demand = add_non_eu27_industrial_energy_demand(countries, demand, production)
+    demand = _separate_basic_chemicals(demand, production, params)
+    demand = _add_non_eu27_industrial_energy_demand(countries, demand, production)
 
     # for format compatibility
     demand = demand.stack(future_stack=True).unstack(level=[0, 2])
@@ -295,4 +297,8 @@ if __name__ == "__main__":
     demand.index.name = "TWh/a"
     demand.sort_index(axis=1, inplace=True)
 
-    demand.to_csv(snakemake.output.current_energy_demand)
+    demand.to_csv(snakemake.output.energy_demand)
+
+
+if __name__ == "__main__":
+    prepare_current_europe_energy_demand()
