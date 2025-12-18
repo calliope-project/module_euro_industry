@@ -4,6 +4,9 @@ A module to create disaggregated energy demand of European industries at any res
 
 A modular `snakemake` workflow built for [`clio`](https://clio.readthedocs.io/) data modules.
 
+> [!IMPORTANT]
+> This module is still in active development!
+
 ## Using this module
 
 This module can be imported directly into any `snakemake` workflow.
